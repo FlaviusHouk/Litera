@@ -1,4 +1,4 @@
-project ('Litera', 'c', version: '0.0.1', licence: 'GPLv3')
+project ('Litera', 'c', version: '0.0.1', license: 'GPLv3')
 
 subdir('pkg')
 subdir('app')

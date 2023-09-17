@@ -3,17 +3,16 @@ litera_sources = [
 ]
 
 local_includes = [
-    include_directories('pkg/core', is_system: false),
-    include_directories('pkg/evernote-backend', is_system: false)
+    include_directories('../../pkg/core', is_system: false),
+    include_directories('../../pkg/evernote-backend', is_system: false)
 ]
 
-local_parts = [
-   core_lib,
-   evernote_lib
+local_deps = [
+   evernote_backend
 ]
 
 deps = [
     dependency('gtk4')
 ]
 
-litera_app = executable('litera', sources: litera_sources, dependencies: deps,  include_directories: local_includes, link_with: local_parts)
+litera_app = executable('litera', sources: litera_sources, dependencies: deps,  include_directories: local_includes, link_with: local_deps)
