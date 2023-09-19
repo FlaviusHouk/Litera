@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="LiteraAppMainWindow" parent="GtkApplicationWindow">
+    <property name="title" translatable="yes">Litera</property>
+    <property name="default-width">600</property>
+    <property name="default-height">400</property>
+    <child>
+      <object class="GtkBox" id="root_box">
+        <property name="orientation">horizontal</property>
+        <child>
+          <object class="GtkBox" id="left_panel"/>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
+

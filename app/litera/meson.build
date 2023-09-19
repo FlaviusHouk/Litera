@@ -1,5 +1,12 @@
+gnome = import('gnome')
+
+gnome_res = gnome.compile_resources('resources', 'resources.xml')
+
 litera_sources = [
-    'main.c'
+    'main.c',
+    'litera_app.c',
+    'litera_app_main_window.c',
+    gnome_res
 ]
 
 local_includes = [
@@ -8,6 +15,7 @@ local_includes = [
 ]
 
 local_deps = [
+   core_lib,
    evernote_backend
 ]
 
