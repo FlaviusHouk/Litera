@@ -8,4 +8,10 @@ G_DECLARE_FINAL_TYPE (LiteraApp, litera_app, LITERA, APP, GtkApplication)
 
 LiteraApp*  litera_app_new();
 
+typedef enum app_page_t {
+	LOGIN,
+	SETTINGS,
+	NOTEPAD
+} AppPage;
+
 #endif //_LITERA_APP_H_

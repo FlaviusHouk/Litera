@@ -5,10 +5,18 @@
     <property name="default-width">600</property>
     <property name="default-height">400</property>
     <child>
-      <object class="GtkBox" id="root_box">
+      <object class="GtkBox" id="rootPanel">
         <property name="orientation">horizontal</property>
         <child>
-          <object class="GtkBox" id="left_panel"/>
+          <object class="GtkBox" id="left_panel">
+		     <child>
+			   <object class="GtkButton"> 
+	    	     <property name="label">Settings</property>
+				 <property name="valign">end</property>
+				 <property name="vexpand">false</property>
+			   </object>
+			 </child>
+		  </object>
         </child>
       </object>
     </child>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="LiteraLoginPage" parent="GtkWidget">
+    <child>
+	  <object class="GtkCenterBox">
+        <property name="orientation">vertical</property>
+        <child type="center">
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+			<property name="halign">center</property>
+            <child>
+              <object class="GtkLabel">
+	    	    <property name="label">Credential: </property>
+			    <property name="halign">center</property>
+	    	  </object>
+            </child>
+            <child>
+              <object class="GtkEntry">
+			    <property name="halign">center</property>
+			  </object>
+            </child>
+            <child>
+              <object class="GtkPasswordEntry">
+			    <property name="halign">center</property>
+			  </object>
+            </child>
+            <child>
+              <object class="GtkButton"> 
+	    	    <property name="label">Login</property>
+			    <property name="halign">center</property>
+	    	  </object>
+            </child>
+          </object>
+        </child>
+	  </object>
+	</child>
+  </template>
+</interface>

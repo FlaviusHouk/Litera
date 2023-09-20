@@ -3,4 +3,7 @@
   <gresource prefix="/litera">
     <file preprocess="xml-stripblanks">main_window.ui</file>
   </gresource>
+  <gresource prefix="/litera">
+    <file preprocess="xml-stripblanks">login_page.ui</file>
+  </gresource>
 </gresources>
