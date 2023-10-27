@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+<menu id="app-menu">
+	<section>
+		<item>
+			<attribute name="label">Settings</attribute>
+		</item>
+		<item>
+			<attribute name="label">Logout</attribute>
+		</item>
+		<item>
+			<attribute name="label">About</attribute>
+		</item>
+		<item>
+			<attribute name="label">Quit</attribute>
+		</item>
+	</section>
+</menu>
+</interface>

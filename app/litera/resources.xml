@@ -6,4 +6,13 @@
   <gresource prefix="/litera">
     <file preprocess="xml-stripblanks">login_page.ui</file>
   </gresource>
+  <gresource prefix="/litera">
+    <file preprocess="xml-stripblanks">settings.ui</file>
+  </gresource>
+  <gresource prefix="/litera">
+    <file preprocess="xml-stripblanks">app_menu.ui</file>
+  </gresource>
+  <gresource prefix="/litera">
+    <file preprocess="xml-stripblanks">notepad_page.ui</file>
+  </gresource>
 </gresources>

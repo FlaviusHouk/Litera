@@ -7,6 +7,8 @@ litera_sources = [
     'litera_app.c',
     'litera_app_main_window.c',
     'litera_login_page.c',
+    'litera_settings_page.c',
+    'litera_notepad_page.c',
     gnome_res
 ]
 

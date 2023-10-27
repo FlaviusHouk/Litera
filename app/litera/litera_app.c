@@ -1,5 +1,6 @@
 #include "litera_app_main_window.h"
 #include "state.h"
+#include "evernote-backend.h"
 
 struct _LiteraApp {
 	GtkApplication parent;
@@ -12,9 +13,12 @@ static void litera_app_init (LiteraApp* app) {
 	app->state = core_state_new();
 }
 
-static void litera_app_activate (GApplication* app) {
-	LiteraAppMainWindow* win = litera_app_main_window_new(LITERA_APP(app));
-    litera_app_main_window_set_page (win, LOGIN);
+static void litera_app_activate (GApplication* app) {	
+	LiteraApp* this = LITERA_APP(app);
+	Backend b = evernote_get_backend();
+	core_state_set_backend(this->state, b);
+
+	LiteraAppMainWindow* win = litera_app_main_window_new(LITERA_APP(app), this->state);
 	gtk_window_present(GTK_WINDOW(win));
 }
 

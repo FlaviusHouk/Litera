@@ -6,13 +6,15 @@
 
 typedef struct backend_t {
 	const char* name;
-	User* (*login)(void* state, char* userName, char* password);
-	void (*logout)(void* state);
+	bool is_initialized;
+	void (*init)(void* state);
+	LiteraUser* (*login)(void* state, char* userName, char* password);
+	LiteraUser* (*login_dev)(void* state, const char* token);
+	void (*logout)(void* state, LiteraUser* currentUser);
+	LiteraNotebook** (*get_notebooks)(void* state, LiteraUser* currentUser);
+	LiteraNote** (*get_notes)(void* state, LiteraUser* currentUser, LiteraNotebook* notebook);
+	char* (*get_content)(void* state, LiteraUser* currentUser,  LiteraNote* note);
 	void* state;
-	void* user_data;
 } Backend;
-
-#define core_backend_login(backend, userName, password) backend.login(backend.state, userName, password)
-#define core_backend_logout(backend) backend.logout(backend.state)
 
 #endif //_CORE_BACKEND_H_

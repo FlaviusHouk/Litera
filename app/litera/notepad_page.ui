@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+	<template class="LiteraNotepadPage" parent="GtkWidget">
+		<child>
+			<object class="GtkBox">
+            	<property name="orientation">horizontal</property>
+				<child>
+					<object class="GtkBox">
+            			<property name="orientation">vertical</property>
+						<property name="width-request">250</property>
+						<child>
+							<object class="GtkDropDown" id="notepadSelector"/>
+						</child>
+						<child>
+							<object class="GtkListBox" id="notesList"/>
+						</child>
+					</object>
+				</child>
+				<child>
+					<object class="GtkBox">
+            			<property name="orientation">vertical</property>
+						<child>
+							<object class="GtkBox">
+            					<property name="orientation">horizontal</property>
+								<child>
+									<object class="GtkButton"/>
+								</child>
+							</object>
+						</child>
+						<child>
+							<object class="GtkTextView" id="textView">
+								<property name="hexpand">true</property>
+								<property name="vexpand">true</property>
+							</object>
+						</child>
+					</object>
+				</child>
+			</object>
+		</child>
+	</template>
+</interface>
