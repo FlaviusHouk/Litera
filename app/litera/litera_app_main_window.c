@@ -31,7 +31,7 @@ static void litera_app_main_window_on_select_notebook(GObject* obj, GParamSpec* 
 static void litera_app_main_window_on_note_change(GObject* obj, GParamSpec* spec, LiteraAppMainWindow* win) {
 	LiteraNotepadPage* page = LITERA_NOTEPAD_PAGE(obj);
     LiteraNote* selected = litera_notepad_page_get_selected_note(page);
-	gchar* content = core_state_get_content(win->state, selected);
+	DataPiece* content = core_state_get_content(win->state, selected);
 	litera_notepad_page_set_content(page, content);
 }
 
@@ -40,9 +40,10 @@ static void litera_app_main_window_on_dev_login(GObject* page, gchar* token, Lit
 	g_signal_handler_disconnect(page, win->loginDevHandlerId);
 
     LiteraNotebook** notebooks = core_state_get_notebooks(win->state);
-	litera_notepad_page_set_notebooks(win->notepadPage, notebooks);
 	g_signal_connect(G_OBJECT(win->notepadPage), "notify::selected-notebook", G_CALLBACK(litera_app_main_window_on_select_notebook), win);
 	g_signal_connect(G_OBJECT(win->notepadPage), "notify::selected-note", G_CALLBACK(litera_app_main_window_on_note_change), win);
+
+	litera_notepad_page_set_notebooks(win->notepadPage, notebooks);
 
 	gtk_stack_set_visible_child_name(win->rootPanel, "NotepadPage");
 }

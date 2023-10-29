@@ -12,9 +12,10 @@ local_includes = [
   include_directories('../evernote-sdk', is_system: false)
 ]
 
-sdk_deps = [
+evernote_backend_deps = [
   dependency('thrift_c_glib'),
-  dependency('libsoup-2.4')
+  dependency('libsoup-2.4'),
+  dependency('libxml-2.0')
 ]
 
-evernote_backend = library('evernote-backend', sources: evernote_backend_sources, link_with: local_deps, include_directories: local_includes, dependencies: sdk_deps)
+evernote_backend = library('evernote-backend', sources: evernote_backend_sources, link_with: local_deps, include_directories: local_includes, dependencies: evernote_backend_deps)

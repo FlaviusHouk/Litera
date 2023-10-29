@@ -4,6 +4,8 @@
 #include <thrift/c_glib/protocol/thrift_binary_protocol.h>
 #include <stdio.h>
 #include <glib.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 
 #include "user_store.h"
 #include "note_store.h"
@@ -14,6 +16,8 @@ typedef struct _evernote_backend_state {
 } EvernoteState;
 
 static void evernote_init(void* state) {
+	LIBXML_TEST_VERSION
+
 	GError* err = NULL;
 	EvernoteState* this = (EvernoteState*)state;
 
@@ -119,8 +123,8 @@ static LiteraNote** evernote_get_notes(void* state, LiteraUser* user, LiteraNote
 		LiteraNote* note = g_new(LiteraNote, 1);
 		NoteMetadata* evNote = (NoteMetadata*)obtainedNotes->pdata[i];
 		note->title = g_strdup(evNote->title);
-		note->content = NULL;
 		note->state = g_object_ref(G_OBJECT(evNote));
+		note->content = NULL;
 		notes[i] = note;
 	}
 
@@ -131,7 +135,96 @@ static LiteraNote** evernote_get_notes(void* state, LiteraUser* user, LiteraNote
 	return notes;
 }
 
-static char* evernote_get_note_content(void* state, LiteraUser* user, LiteraNote* note) {
+static void evernote_parse_div(xmlNodePtr node, DataPiece* data) {
+	TextPiece* text = &(data->text);
+	text->type = DATA_PIECE_TEXT;
+	text->len = 0;
+
+	xmlNodePtr child = node->children;
+	int currIdx = 0;
+
+	//Calculate buffer for storing text
+	while(child != NULL) {
+		if(child->type == XML_TEXT_NODE) {
+			xmlChar* content = child->content;
+			int currLen = xmlStrlen(content);	
+            if (content[currLen - 1] == '\0') {
+				currLen--;
+			}
+
+			text->len += currLen;
+		} else if (xmlStrcmp(child->name, (const xmlChar*)"br") == 0) {
+			text->len++;
+		}
+
+		child = child->next;
+	}
+
+	text->text = g_new(gchar, text->len);
+	child = node->children;
+    while(child != NULL) {
+		if(child->type == XML_TEXT_NODE) {
+			xmlChar* content = child->content;
+			gchar* buffStart = text->text + currIdx;
+            int currLen = xmlStrlen(content);
+            if (content[currLen - 1] == '\0') {
+				currLen--;
+			}
+
+			memcpy(buffStart, content, currLen);
+			currIdx += currLen;
+		} else if (xmlStrcmp(child->name, (const xmlChar*)"br") == 0) {
+			text->text[currIdx++] = '\n';
+		}
+
+		child = child->next;
+	}
+}
+
+static GArray* evernote_parse_xhtml_content(gchar* xhtml, gint len) {
+	xmlDocPtr doc = xmlReadMemory(xhtml, len, NULL, NULL, 0);
+
+	g_assert(doc);
+    
+	GArray* arr = g_array_new(FALSE, FALSE, sizeof(DataPiece));
+	g_array_set_size(arr, 1);
+    len = 0;
+
+	xmlNodePtr root = xmlDocGetRootElement(doc);
+	if(root == NULL || xmlStrEqual(root->name, (xmlChar*)"en-note") != 1) {
+		printf("%s\n", "cannot get root element");
+	    DataPiece* p = &g_array_index(arr, DataPiece, 0);
+		p->type = DATA_PIECE_END;
+		
+		return arr;
+	}
+
+	unsigned long childrenCount = xmlChildElementCount(root);
+	g_array_set_size(arr, childrenCount);
+
+	xmlNodePtr child = root->children;
+	while(child != NULL) {
+		DataPiece* cur = &g_array_index(arr, DataPiece, len++);
+		
+		/* Paragraph */
+		if (xmlStrEqual(child->name, (const xmlChar*)"div") == 1) {
+			evernote_parse_div(child, cur);
+		}
+
+		child = child->next;
+	}
+
+	if(arr->len >= len) {
+		g_array_set_size(arr, arr->len + 1);
+	}
+	
+	DataPiece* end = &g_array_index(arr, DataPiece, len++);
+	end->type = DATA_PIECE_END;
+
+	return arr;
+}
+
+static DataPiece* evernote_refresh_note_content(void* state, LiteraUser* user, LiteraNote* note) {
 	EvernoteState* this = (EvernoteState*)state;
 	GError* err = NULL;
 	EDAMUserException* userException = NULL;
@@ -150,7 +243,19 @@ static char* evernote_get_note_content(void* state, LiteraUser* user, LiteraNote
 		return NULL;
 	}
 
-	return content;
+	GArray* p = evernote_parse_xhtml_content(content, evNote->contentLength);
+	g_free(content);
+	note->content = (DataPiece*)p->data;
+	
+	return note->content;
+}
+
+static DataPiece* evernote_get_note_content(void* state, LiteraUser* user, LiteraNote* note) {
+	if (note->content == NULL) {
+		return evernote_refresh_note_content(state, user, note);
+	}
+
+	return note->content;
 }
 
 static EvernoteState state =
@@ -161,14 +266,15 @@ static EvernoteState state =
 
 static Backend backend = 
 {
-	.name =           "Evernote",
-	.is_initialized = false,
-    .init =           evernote_init,
-	.login_dev =      evernote_login_dev,
-	.get_notebooks =  evernote_get_notebooks,
-	.get_notes =      evernote_get_notes,
-	.get_content =    evernote_get_note_content,
-	.state =          &state
+	.name =              "Evernote",
+	.is_initialized =    false,
+    .init =              evernote_init,
+	.login_dev =         evernote_login_dev,
+	.get_notebooks =     evernote_get_notebooks,
+	.get_notes =         evernote_get_notes,
+	.get_content =       evernote_get_note_content,
+	.refresh_content =   evernote_refresh_note_content,
+	.state =             &state
 };
 
 Backend evernote_get_backend() {

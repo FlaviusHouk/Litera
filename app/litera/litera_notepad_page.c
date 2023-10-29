@@ -130,6 +130,11 @@ void litera_notepad_page_set_notebooks(LiteraNotepadPage* page, LiteraNotebook**
 
 	gtk_drop_down_set_model(page->notepadSelector, G_LIST_MODEL(notebookList));
 	g_signal_connect(page->notepadSelector, "notify::selected", G_CALLBACK(litera_notepad_page_selected_notebook_changed), page);	
+
+    LiteraNotebook* firstNotebook = notebooks[0];
+	if(firstNotebook != NULL) {
+    	g_object_set(page, "selected-notebook", firstNotebook);
+	}
 }
 
 static void litera_notepad_page_on_note_selected(GtkListBox* box, GtkListBoxRow* row, LiteraNotepadPage* page) {
@@ -164,7 +169,14 @@ LiteraNote* litera_notepad_page_get_selected_note(LiteraNotepadPage* page) {
 	return page->selectedNote;
 }
 
-void litera_notepad_page_set_content(LiteraNotepadPage* page, gchar* content) {
+void litera_notepad_page_set_content(LiteraNotepadPage* page, DataPiece* content) {
 	GtkTextBuffer* buffer = gtk_text_view_get_buffer(page->textView);
-	gtk_text_buffer_set_text(buffer, content, -1);
+    
+	//GtkTextMark* insertMark = gtk_text_buffer_get_insert(buffer);
+    for(int i = 0; content[i].type != DATA_PIECE_END; ++i) {
+		DataPiece piece = content[i];
+		if(piece.type == DATA_PIECE_TEXT) {
+			gtk_text_buffer_insert_at_cursor(buffer, piece.text.text, piece.text.len);
+		}
+	}
 }
