@@ -81,8 +81,7 @@ LiteraNote**     core_state_get_notes(State* state, LiteraNotebook* notebook) {
 	return state->backend.get_notes(backendState, state->currentUser, notebook);
 }
 
-/*TODO: change to structure*/
-char*           core_state_get_content(State* state, LiteraNote* note) {
+DataPiece*           core_state_get_content(State* state, LiteraNote* note) {
     void* backendState = state->backend.state;
 	return state->backend.get_content(backendState, state->currentUser, note);
 }

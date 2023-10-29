@@ -13,7 +13,8 @@ typedef struct backend_t {
 	void (*logout)(void* state, LiteraUser* currentUser);
 	LiteraNotebook** (*get_notebooks)(void* state, LiteraUser* currentUser);
 	LiteraNote** (*get_notes)(void* state, LiteraUser* currentUser, LiteraNotebook* notebook);
-	char* (*get_content)(void* state, LiteraUser* currentUser,  LiteraNote* note);
+	DataPiece* (*get_content)(void* state, LiteraUser* currentUser,  LiteraNote* note);
+	DataPiece* (*refresh_content)(void* state, LiteraUser* currentUser,  LiteraNote* note);
 	void* state;
 } Backend;
 
