@@ -245,6 +245,21 @@ static DataPiece* evernote_refresh_note_content(void* state, LiteraUser* user, L
 
 	GArray* p = evernote_parse_xhtml_content(content, evNote->contentLength);
 	g_free(content);
+
+	if(note->content != NULL) {
+		for(int i = 0; note->content[i].type != DATA_PIECE_END; ++i) {
+			DataPiece p = note->content[i];
+			
+			if(p.type == DATA_PIECE_TEXT) {
+				TextPiece t = p.text;
+
+				g_free(t.text);
+			}
+		}
+
+		g_free(note->content);
+	}
+
 	note->content = (DataPiece*)p->data;
 	
 	return note->content;

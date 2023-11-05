@@ -23,7 +23,16 @@
 							<object class="GtkBox">
             					<property name="orientation">horizontal</property>
 								<child>
-									<object class="GtkButton"/>
+									<object class="GtkButton" id="refreshButton">
+										<property name="label">Refresh</property>
+										<property name="sensitive">false</property>
+									</object>
+								</child>
+								<child>
+									<object class="GtkButton" id="saveButton">
+										<property name="label">Save</property>
+										<property name="sensitive">false</property>
+									</object>
 								</child>
 							</object>
 						</child>
