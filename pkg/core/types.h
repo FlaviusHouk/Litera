@@ -39,4 +39,6 @@ typedef struct {
 	DataPiece* content;
 } LiteraNote;
 
+void litera_note_set_content(LiteraNote* note, DataPiece* content);
+
 #endif //_CORE_TYPES_H_

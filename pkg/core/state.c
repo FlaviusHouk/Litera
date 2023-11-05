@@ -86,5 +86,10 @@ DataPiece*           core_state_get_content(State* state, LiteraNote* note) {
 	return state->backend.get_content(backendState, state->currentUser, note);
 }
 
+void core_state_set_content(State* state, LiteraNote* note, DataPiece* content) {
+	void* backendState = state->backend.state;
+	state->backend.save_content(backendState, state->currentUser, note, content);
+}
+
 static void state_try_load_user(State* state) {
 }

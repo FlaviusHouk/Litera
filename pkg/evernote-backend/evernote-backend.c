@@ -9,6 +9,7 @@
 
 #include "user_store.h"
 #include "note_store.h"
+//#include "dtd.h"
 
 typedef struct _evernote_backend_state {
 	UserStoreClient* userClient;
@@ -31,7 +32,8 @@ static void evernote_init(void* state) {
 	} else if (!checkValue) {
 		printf("%s\n", "Error during check");
 		return;
-	}	
+	}
+
 }
 
 static LiteraUser* evernote_login_dev(void* state, const char* token) {
@@ -185,6 +187,8 @@ static GArray* evernote_parse_xhtml_content(gchar* xhtml, gint len) {
 	xmlDocPtr doc = xmlReadMemory(xhtml, len, NULL, NULL, 0);
 
 	g_assert(doc);
+
+	g_print("%s\n", xhtml);
     
 	GArray* arr = g_array_new(FALSE, FALSE, sizeof(DataPiece));
 	g_array_set_size(arr, 1);
@@ -273,6 +277,93 @@ static DataPiece* evernote_get_note_content(void* state, LiteraUser* user, Liter
 	return note->content;
 }
 
+static xmlDocPtr evernote_format_enml(DataPiece* content) {
+	xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0"); /*xmlVersion*/
+
+    xmlNodePtr root = xmlNewNode(/*ns*/ NULL, BAD_CAST "en-note");
+	xmlDocSetRootElement(doc, root);
+
+    xmlDtdPtr dtd = xmlCreateIntSubset(doc, BAD_CAST "en-note", NULL, BAD_CAST "http://xml.evernote.com/pub/enml2.dtd");
+
+    gint i = 0;
+	while(content[i].type != DATA_PIECE_END) {
+		if(content[i].type == DATA_PIECE_TEXT) {
+			xmlNodePtr div = xmlNewNode(/*ns*/NULL, BAD_CAST "div");
+			xmlChar* textContent = xmlCharStrdup(content[i].text.text);
+			xmlNodeAddContent(div, textContent);
+   
+            xmlNodePtr br = xmlNewNode(/*ns*/NULL, BAD_CAST "br");
+			xmlSetProp(br, BAD_CAST "clear", BAD_CAST "none");
+
+			xmlAddChild(div, br);
+
+			xmlFree(textContent);
+
+			xmlAddChild(root, div);
+		}
+
+		i++;
+	}
+
+	return doc;
+}
+
+static void evernote_save_content(void* state, LiteraUser* user, LiteraNote* note, DataPiece* content) {	
+	xmlChar* rawXml;
+	gint xmlContentLen;
+    GError* err = NULL;
+	EDAMUserException* userException = NULL;
+	EDAMSystemException* systemException = NULL;
+	EDAMNotFoundException* notFoundException = NULL;
+	EvernoteState* this = (EvernoteState*)state;
+
+	xmlDocPtr xmlContent = evernote_format_enml(content);
+	xmlDocDumpFormatMemoryEnc(xmlContent, &rawXml, &xmlContentLen, "UTF-8", /*formating spaces*/0);
+
+	NoteMetadata* metadata = NOTE_METADATA(note->state);
+	Note* returnNote = g_object_new(TYPE_NOTE, NULL);
+    returnNote->guid = metadata->guid;
+	returnNote->__isset_guid = TRUE;
+	returnNote->title = metadata->title;
+	returnNote->__isset_title = TRUE;
+    returnNote->content = (gchar*)rawXml;
+    returnNote->__isset_content = TRUE;
+
+    Note* sendNote = g_object_new(TYPE_NOTE, NULL);
+    sendNote->guid = metadata->guid;
+	sendNote->__isset_guid = TRUE;
+	sendNote->title = metadata->title;
+	sendNote->__isset_title = TRUE;
+    sendNote->content = (gchar*)rawXml;
+    sendNote->__isset_content = TRUE;
+
+    if(!note_store_client_update_note(NOTE_STORE_IF(this->noteStore), &returnNote, user->access_token, sendNote, &userException, &systemException, &notFoundException, &err)) {
+		g_print("%s: %s\n", "cannot update note", err->message);
+		return;
+	}
+
+	xmlFree(rawXml);
+	xmlFree(xmlContent);
+
+    returnNote->guid = NULL;
+	returnNote->__isset_guid = FALSE;
+	returnNote->title = NULL;
+	returnNote->__isset_title = FALSE;
+    returnNote->content = NULL;
+    returnNote->__isset_content = FALSE;
+	g_object_unref(G_OBJECT(returnNote));
+
+    sendNote->guid = NULL;
+	sendNote->__isset_guid = FALSE;
+	sendNote->title = NULL;
+	sendNote->__isset_title = FALSE;
+	sendNote->content = NULL;
+	sendNote->__isset_content = FALSE;
+	g_object_unref(G_OBJECT(sendNote));
+
+    //TODO: set note content
+}
+
 static EvernoteState state =
 {
 	.userClient = NULL,
@@ -289,6 +380,7 @@ static Backend backend =
 	.get_notes =         evernote_get_notes,
 	.get_content =       evernote_get_note_content,
 	.refresh_content =   evernote_refresh_note_content,
+	.save_content =      evernote_save_content,
 	.state =             &state
 };
 

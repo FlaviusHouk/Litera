@@ -1,5 +1,6 @@
 core_sources = [
-  'state.c'
+  'state.c',
+  'content.c'
 ]
 
 core_lib = library('core', sources: core_sources)

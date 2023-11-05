@@ -24,5 +24,6 @@ void             core_state_logout(State* state);
 LiteraNotebook** core_state_get_notebooks(State* state);
 LiteraNote**     core_state_get_notes(State* state, LiteraNotebook* notebook);
 DataPiece*       core_state_get_content(State* state, LiteraNote* note);
+void             core_state_set_content(State* state, LiteraNote* note, DataPiece* content);
 
 #endif //_CORE_STATE_H_

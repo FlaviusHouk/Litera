@@ -122,7 +122,7 @@ static void litera_notepad_page_class_init(LiteraNotepadPageClass* class) {
 
 	litera_notepad_page_refresh_signal_id = g_signal_new("refresh-note", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS, 0, NULL, NULL, NULL, G_TYPE_NONE, 1, G_TYPE_POINTER);
 
-	litera_notepad_page_save_signal_id = g_signal_new("save-note", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS, 0, NULL, NULL, NULL, G_TYPE_NONE, 1, G_TYPE_POINTER);
+	litera_notepad_page_save_signal_id = g_signal_new("save-note", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS, 0, NULL, NULL, NULL, G_TYPE_NONE, 2, G_TYPE_POINTER, G_TYPE_POINTER);
 
 	g_object_class_install_properties(object_class, LITERA_NOTEPAD_PAGE_PROPS_COUNT, props);
 }
@@ -144,10 +144,51 @@ static void litera_notepad_page_on_refresh(GtkButton* button, LiteraNotepadPage*
 	g_signal_emit(page, litera_notepad_page_refresh_signal_id, 0, page->selectedNote);
 }
 
+
+static void litera_notepad_page_on_save(GtkButton* button, LiteraNotepadPage* page) {
+	GtkTextBuffer* buffer = gtk_text_view_get_buffer(page->textView);
+
+    GtkTextIter start, end;
+	int paragraphCount = gtk_text_buffer_get_line_count(buffer);
+
+	DataPiece* content = g_new(DataPiece, paragraphCount + 1);
+
+	for(int i = 0; i < paragraphCount; ++i) {
+		gtk_text_buffer_get_iter_at_line(buffer, &start, i);
+		gtk_text_buffer_get_iter_at_line(buffer, &end, i + 1);
+
+		//TODO: check for marks to verify no image is here.
+		content[i].type = DATA_PIECE_TEXT;
+		gchar* slice = gtk_text_buffer_get_slice(buffer, &start, &end, FALSE);
+
+        //Questionable
+		gchar* pos = strchr(slice, '\n');
+		while(pos != NULL) {
+			*pos = '\0';
+			pos = strchr(slice, '\n');
+		}
+
+		content[i].text.text = slice;
+	}
+
+	content[paragraphCount].type = DATA_PIECE_END;
+
+	g_signal_emit(page, litera_notepad_page_save_signal_id, 0, page->selectedNote, content);
+
+	for(int i = 0; i < paragraphCount; ++i) {
+		if(content[i].type == DATA_PIECE_TEXT) {
+			g_free(content[i].text.text);
+		}
+	}
+
+	g_free(content);
+}
+
 static void litera_notepad_page_init(LiteraNotepadPage* widget) {
 	gtk_widget_init_template(GTK_WIDGET(widget));
 
 	g_signal_connect(widget->refreshButton, "clicked", G_CALLBACK(litera_notepad_page_on_refresh), widget);
+	g_signal_connect(widget->saveButton, "clicked", G_CALLBACK(litera_notepad_page_on_save), widget);
 }
 
 void litera_notepad_page_set_notebooks(LiteraNotepadPage* page, LiteraNotebook** notebooks) {

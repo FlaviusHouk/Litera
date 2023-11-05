@@ -44,6 +44,10 @@ static void litera_app_main_window_refresh_note(GObject* page, LiteraNote* selec
 	litera_notepad_page_set_content(LITERA_NOTEPAD_PAGE(page), content);
 }
 
+static void litera_app_main_window_save_note(GObject* page, LiteraNote* note, DataPiece* content, LiteraAppMainWindow* win) {
+	core_state_set_content(win->state, note, content);
+}
+
 static void litera_app_main_window_on_dev_login(GObject* page, gchar* token, LiteraAppMainWindow* win) {
     core_state_login_dev(win->state, token);
 	g_signal_handler_disconnect(page, win->loginDevHandlerId);
@@ -52,6 +56,7 @@ static void litera_app_main_window_on_dev_login(GObject* page, gchar* token, Lit
 	g_signal_connect(G_OBJECT(win->notepadPage), "notify::selected-notebook", G_CALLBACK(litera_app_main_window_on_select_notebook), win);
 	g_signal_connect(G_OBJECT(win->notepadPage), "notify::selected-note", G_CALLBACK(litera_app_main_window_on_note_change), win);
 	g_signal_connect(G_OBJECT(win->notepadPage), "refresh-note", G_CALLBACK(litera_app_main_window_refresh_note), win);
+	g_signal_connect(G_OBJECT(win->notepadPage), "save-note", G_CALLBACK(litera_app_main_window_save_note), win);
 
 	litera_notepad_page_set_notebooks(win->notepadPage, notebooks);
 
