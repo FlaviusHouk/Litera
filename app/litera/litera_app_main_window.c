@@ -24,14 +24,14 @@ static void litera_app_main_window_on_settings_button_click(GtkButton* button, g
 static void litera_app_main_window_on_select_notebook(GObject* obj, GParamSpec* spec, LiteraAppMainWindow* win) {
 	LiteraNotepadPage* page = LITERA_NOTEPAD_PAGE(obj);
 	LiteraNotebook* selected = litera_notepad_page_get_selected_notebook(page);
-    LiteraNote** notes = core_state_get_notes(win->state, selected);
+	LiteraNote** notes = core_state_get_notes(win->state, selected);
 	litera_notepad_page_set_notes(page, notes);
 }
 
 static void litera_app_main_window_on_note_change(GObject* obj, GParamSpec* spec, LiteraAppMainWindow* win) {
 	LiteraNotepadPage* page = LITERA_NOTEPAD_PAGE(obj);
-    LiteraNote* selected = litera_notepad_page_get_selected_note(page);
-    if(selected == NULL) {
+	LiteraNote* selected = litera_notepad_page_get_selected_note(page);
+	if(selected == NULL) {
 		return;
 	}
 
@@ -49,10 +49,10 @@ static void litera_app_main_window_save_note(GObject* page, LiteraNote* note, Li
 }
 
 static void litera_app_main_window_on_dev_login(GObject* page, gchar* token, LiteraAppMainWindow* win) {
-    core_state_login_dev(win->state, token);
+	core_state_login_dev(win->state, token);
 	g_signal_handler_disconnect(page, win->loginDevHandlerId);
 
-    LiteraNotebook** notebooks = core_state_get_notebooks(win->state);
+	LiteraNotebook** notebooks = core_state_get_notebooks(win->state);
 	g_signal_connect(G_OBJECT(win->notepadPage), "notify::selected-notebook", G_CALLBACK(litera_app_main_window_on_select_notebook), win);
 	g_signal_connect(G_OBJECT(win->notepadPage), "notify::selected-note", G_CALLBACK(litera_app_main_window_on_note_change), win);
 	g_signal_connect(G_OBJECT(win->notepadPage), "refresh-note", G_CALLBACK(litera_app_main_window_refresh_note), win);

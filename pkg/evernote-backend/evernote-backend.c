@@ -27,7 +27,7 @@ static void evernote_init(void* state) {
 	this->userClient = g_object_new(TYPE_USER_STORE_CLIENT, "input_protocol", protocol, "output_protocol", protocol, NULL);
 
 	gboolean checkValue = FALSE;
-    if(!user_store_client_check_version(USER_STORE_IF(this->userClient), &checkValue, "Litera/0.0.1; Linux/Fedora 38", EDAM_VERSION_MAJOR, EDAM_VERSION_MINOR, &err)) {
+	if(!user_store_client_check_version(USER_STORE_IF(this->userClient), &checkValue, "Litera/0.0.1; Linux/Fedora 38", EDAM_VERSION_MAJOR, EDAM_VERSION_MINOR, &err)) {
 		printf("%s. %s\n", "Could not check version", err->message);
 	} else if (!checkValue) {
 		printf("%s\n", "Error during check");
@@ -48,7 +48,7 @@ static LiteraUser* evernote_login_dev(void* state, const char* token) {
 		return NULL;
 	}
 
-    gchar* noteStoreUrl = urls->noteStoreUrl;
+	gchar* noteStoreUrl = urls->noteStoreUrl;
 	EvernoteHttpTransport* storeTransport = evernote_http_transport_new(noteStoreUrl);
 	ThriftProtocol* storeProtocol =  g_object_new (THRIFT_TYPE_BINARY_PROTOCOL, "transport", storeTransport, NULL);
 	this->noteStore = g_object_new(TYPE_NOTE_STORE_CLIENT, "input_protocol", storeProtocol, "output_protocol", storeProtocol, NULL);
@@ -81,7 +81,7 @@ static LiteraNotebook** evernote_get_notebooks(void* state, LiteraUser* user) {
 
 	LiteraNotebook** returnValue = (LiteraNotebook**)malloc(sizeof(LiteraNotebook*) * notebooks->len + 1);
 	returnValue[notebooks->len] = NULL;
-    for(int i = 0; i < notebooks->len; i++) {
+	for(int i = 0; i < notebooks->len; i++) {
 		returnValue[i] = (LiteraNotebook*)malloc(sizeof(LiteraNotebook));
 		Notebook* evNotebook = (Notebook*)notebooks->pdata[i];
 
@@ -89,37 +89,37 @@ static LiteraNotebook** evernote_get_notebooks(void* state, LiteraUser* user) {
 		returnValue[i]->state = g_object_ref(G_OBJECT(evNotebook));
 	}
 
-    g_ptr_array_unref(notebooks);
+	g_ptr_array_unref(notebooks);
 
 	return returnValue;
 }
 
 static LiteraNote** evernote_get_notes(void* state, LiteraUser* user, LiteraNotebook* notebook) {
-    EvernoteState* this = (EvernoteState*)state;
+	EvernoteState* this = (EvernoteState*)state;
 	GError* err = NULL;
 	EDAMUserException* userException = NULL;
 	EDAMSystemException* systemException = NULL;
 	EDAMNotFoundException * notFoundException = NULL;
 	Notebook* evNotebook = NOTEBOOK(notebook->state);
 
-    NoteFilter* filter = g_object_new(TYPE_NOTE_FILTER, NULL);
+	NoteFilter* filter = g_object_new(TYPE_NOTE_FILTER, NULL);
 	filter->notebookGuid = g_strdup(evNotebook->guid); 
 	filter->__isset_notebookGuid = TRUE;
 
-    NotesMetadataList* list = g_object_new(TYPE_NOTES_METADATA_LIST, NULL);
+	NotesMetadataList* list = g_object_new(TYPE_NOTES_METADATA_LIST, NULL);
 	NotesMetadataResultSpec* spec = g_object_new(TYPE_NOTES_METADATA_RESULT_SPEC, NULL);
-    spec->includeTitle = TRUE;
+	spec->includeTitle = TRUE;
 	spec->__isset_includeTitle = TRUE;
 	spec->includeContentLength = TRUE;
 	spec->__isset_includeContentLength = TRUE;
 
-    if(!note_store_if_find_notes_metadata (NOTE_STORE_IF(this->noteStore), &list, user->access_token, filter, 0, 100, spec, &userException, &systemException, &notFoundException, &err)) {
+	if(!note_store_if_find_notes_metadata (NOTE_STORE_IF(this->noteStore), &list, user->access_token, filter, 0, 100, spec, &userException, &systemException, &notFoundException, &err)) {
 		printf("%s: %s\n", "cannot get notes for notebook", err->message);
 		return NULL;
 	}
 
 	GPtrArray* obtainedNotes = list->notes;
-    LiteraNote** notes = (LiteraNote**)malloc(sizeof(LiteraNote*) * (obtainedNotes->len + 1));
+	LiteraNote** notes = (LiteraNote**)malloc(sizeof(LiteraNote*) * (obtainedNotes->len + 1));
 	notes[obtainedNotes->len] = NULL;
 	for(gint i = 0; i < obtainedNotes->len; ++i) {
 		LiteraNote* note = g_new(LiteraNote, 1);
@@ -156,16 +156,16 @@ static DataPiece* evernote_parse_div(xmlNodePtr node) {
 
 		child = child->next;
 	}
-    
+	
 	DataPiece* piece = litera_note_create_text_piece(len);
 	TextPiece* text = &piece->text;
 
 	child = node->children;
-    while(child != NULL) {
+	while(child != NULL) {
 		if(child->type == XML_TEXT_NODE) {
 			xmlChar* content = child->content;
 			gchar* buffStart = text->text + currIdx;
-            int currLen = xmlStrlen(content);
+	        int currLen = xmlStrlen(content);
 
 			memcpy(buffStart, content, currLen);
 			currIdx += currLen;
@@ -185,7 +185,7 @@ static void evernote_parse_xhtml_content(gchar* xhtml, gint len, LiteraNote* not
 	g_assert(doc);
 
 	g_print("%s\n", xhtml);
-    len = 0;
+	len = 0;
 
 	xmlNodePtr root = xmlDocGetRootElement(doc);
 	if(root == NULL || xmlStrEqual(root->name, (xmlChar*)"en-note") != 1) {
@@ -215,14 +215,14 @@ static void evernote_refresh_note_content(void* state, LiteraUser* user, LiteraN
 	NoteMetadata* evNote = (NoteMetadata*)note->state;
 	printf("Note id is %s\n", evNote->guid);
 
-    gchar* content = g_new(gchar, evNote->contentLength);
+	gchar* content = g_new(gchar, evNote->contentLength);
 	if(note->content != NULL) {
 		litera_note_clear(note);
 	} else {
 		note->content = litera_note_create_content(/*capacity*/4);
 	}
 
-    if(!note_store_if_get_note_content (NOTE_STORE_IF(this->noteStore), &content, user->access_token, evNote->guid, &userException, &systemException, &notFoundException, &err)) {
+	if(!note_store_if_get_note_content (NOTE_STORE_IF(this->noteStore), &content, user->access_token, evNote->guid, &userException, &systemException, &notFoundException, &err)) {
 		printf("%s: %s\n", "cannot get note content", err->message);
 		if(userException != NULL) {
 			printf("User exception, code: %d\n", userException->errorCode);
@@ -247,10 +247,10 @@ static void evernote_get_note_content(void* state, LiteraUser* user, LiteraNote*
 static xmlDocPtr evernote_format_enml(LiteraNote* note) {
 	xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0"); /*xmlVersion*/
 
-    xmlNodePtr root = xmlNewNode(/*ns*/ NULL, BAD_CAST "en-note");
+	xmlNodePtr root = xmlNewNode(/*ns*/ NULL, BAD_CAST "en-note");
 	xmlDocSetRootElement(doc, root);
 
-    xmlDtdPtr dtd = xmlCreateIntSubset(doc, BAD_CAST "en-note", NULL, BAD_CAST "http://xml.evernote.com/pub/enml2.dtd");
+	xmlDtdPtr dtd = xmlCreateIntSubset(doc, BAD_CAST "en-note", NULL, BAD_CAST "http://xml.evernote.com/pub/enml2.dtd");
 
 	LiteraNoteContentIterator iter;
 	litera_note_iterate(note, &iter);
@@ -272,8 +272,8 @@ static xmlDocPtr evernote_format_enml(LiteraNote* note) {
 
 			xmlNodeAddContent(div, textContent);
    
-            if(haveNewline) {
-            	xmlNodePtr br = xmlNewNode(/*ns*/NULL, BAD_CAST "br");
+	        if(haveNewline) {
+	        	xmlNodePtr br = xmlNewNode(/*ns*/NULL, BAD_CAST "br");
 				xmlSetProp(br, BAD_CAST "clear", BAD_CAST "none");
 
 				xmlAddChild(div, br);
@@ -291,7 +291,7 @@ static xmlDocPtr evernote_format_enml(LiteraNote* note) {
 static void evernote_save_content(void* state, LiteraUser* user, LiteraNote* note) {
 	xmlChar* rawXml;
 	gint xmlContentLen;
-    GError* err = NULL;
+	GError* err = NULL;
 	EDAMUserException* userException = NULL;
 	EDAMSystemException* systemException = NULL;
 	EDAMNotFoundException* notFoundException = NULL;
@@ -302,22 +302,22 @@ static void evernote_save_content(void* state, LiteraUser* user, LiteraNote* not
 
 	NoteMetadata* metadata = NOTE_METADATA(note->state);
 	Note* returnNote = g_object_new(TYPE_NOTE, NULL);
-    returnNote->guid = metadata->guid;
+	returnNote->guid = metadata->guid;
 	returnNote->__isset_guid = TRUE;
 	returnNote->title = metadata->title;
 	returnNote->__isset_title = TRUE;
-    returnNote->content = (gchar*)rawXml;
-    returnNote->__isset_content = TRUE;
+	returnNote->content = (gchar*)rawXml;
+	returnNote->__isset_content = TRUE;
 
-    Note* sendNote = g_object_new(TYPE_NOTE, NULL);
-    sendNote->guid = metadata->guid;
+	Note* sendNote = g_object_new(TYPE_NOTE, NULL);
+	sendNote->guid = metadata->guid;
 	sendNote->__isset_guid = TRUE;
 	sendNote->title = metadata->title;
 	sendNote->__isset_title = TRUE;
-    sendNote->content = (gchar*)rawXml;
-    sendNote->__isset_content = TRUE;
+	sendNote->content = (gchar*)rawXml;
+	sendNote->__isset_content = TRUE;
 
-    if(!note_store_client_update_note(NOTE_STORE_IF(this->noteStore), &returnNote, user->access_token, sendNote, &userException, &systemException, &notFoundException, &err)) {
+	if(!note_store_client_update_note(NOTE_STORE_IF(this->noteStore), &returnNote, user->access_token, sendNote, &userException, &systemException, &notFoundException, &err)) {
 		g_print("%s: %s\n", "cannot update note", err->message);
 		return;
 	}
@@ -325,23 +325,21 @@ static void evernote_save_content(void* state, LiteraUser* user, LiteraNote* not
 	xmlFree(rawXml);
 	xmlFree(xmlContent);
 
-    returnNote->guid = NULL;
+	returnNote->guid = NULL;
 	returnNote->__isset_guid = FALSE;
 	returnNote->title = NULL;
 	returnNote->__isset_title = FALSE;
-    returnNote->content = NULL;
-    returnNote->__isset_content = FALSE;
+	returnNote->content = NULL;
+	returnNote->__isset_content = FALSE;
 	g_object_unref(G_OBJECT(returnNote));
 
-    sendNote->guid = NULL;
+	sendNote->guid = NULL;
 	sendNote->__isset_guid = FALSE;
 	sendNote->title = NULL;
 	sendNote->__isset_title = FALSE;
 	sendNote->content = NULL;
 	sendNote->__isset_content = FALSE;
 	g_object_unref(G_OBJECT(sendNote));
-
-    //TODO: set note content
 }
 
 static EvernoteState state =
@@ -354,7 +352,7 @@ static Backend backend =
 {
 	.name =              "Evernote",
 	.is_initialized =    false,
-    .init =              evernote_init,
+	.init =              evernote_init,
 	.login_dev =         evernote_login_dev,
 	.get_notebooks =     evernote_get_notebooks,
 	.get_notes =         evernote_get_notes,

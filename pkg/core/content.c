@@ -46,13 +46,13 @@ void litera_note_iterate(LiteraNote* note, LiteraNoteContentIterator* iter) {
 	assert(note);
 	assert(iter);
 
-    init_iterartor(note->content, iter);
+	init_iterartor(note->content, iter);
 }
 
 DataPiece*         litera_note_create_text_piece(int len) {
 	DataPiece* piece = (DataPiece*)malloc(sizeof(DataPiece));
 
-    piece->type = DATA_PIECE_TEXT;
+	piece->type = DATA_PIECE_TEXT;
 	piece->text.text = (char*) malloc(sizeof(char) * len);
 	piece->text.len = len;
 
@@ -62,7 +62,7 @@ DataPiece*         litera_note_create_text_piece(int len) {
 LiteraNoteContent* litera_note_create_content(int capacity) {
 	LiteraNoteContent* content = (LiteraNoteContent*) malloc(sizeof(LiteraNoteContent));
 
-    content->buffer = (DataPiece*) malloc(sizeof(DataPiece) * capacity);
+	content->buffer = (DataPiece*) malloc(sizeof(DataPiece) * capacity);
 	content->len = 0;
 	content->cap = capacity;
 
@@ -79,7 +79,7 @@ void               litera_note_add_piece(LiteraNote* note, DataPiece* piece) {
 		content->buffer = (DataPiece*)newBuf;
 	}
 
-    //I'm not sure how bad is it.
+	//I'm not sure how bad is it.
 	content->buffer[content->len++] = *piece;
 }
 
@@ -118,7 +118,7 @@ void               litere_note_remove_piece(LiteraNote* note, DataPiece* piece) 
 		memcpy(content->buffer + idx, content->buffer + idx + 1, sizeof(DataPiece) * lenToMove);
 	}
 
-    content->len--;
+	content->len--;
 }
 
 void litera_note_clear(LiteraNote* note) {
@@ -138,7 +138,7 @@ void litera_note_clear(LiteraNote* note) {
 void               litera_note_free_content(LiteraNoteContent* content) {
 	LiteraNoteContentIterator iter;
 	init_iterartor(content, &iter);
-    do {
+	do {
 		DataPiece* piece = litera_note_content_iterator_get_current(&iter);
 		if(piece->type == DATA_PIECE_TEXT) {
 			free(piece->text.text);
