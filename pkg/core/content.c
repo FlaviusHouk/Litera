@@ -49,12 +49,16 @@ void litera_note_iterate(LiteraNote* note, LiteraNoteContentIterator* iter) {
 	init_iterartor(note->content, iter);
 }
 
-DataPiece*         litera_note_create_text_piece(int len) {
-	DataPiece* piece = (DataPiece*)malloc(sizeof(DataPiece));
-
+void litera_note_init_text_piece(DataPiece* piece, int len) {
 	piece->type = DATA_PIECE_TEXT;
 	piece->text.text = (char*) malloc(sizeof(char) * len);
 	piece->text.len = len;
+}
+
+DataPiece*         litera_note_create_text_piece(int len) {
+	DataPiece* piece = (DataPiece*)malloc(sizeof(DataPiece));
+
+	litera_note_init_text_piece(piece, len);
 
 	return piece;
 }
@@ -69,26 +73,35 @@ LiteraNoteContent* litera_note_create_content(int capacity) {
 	return content;
 }
 
-void               litera_note_add_piece(LiteraNote* note, DataPiece* piece) {
-	assert(note);
-	LiteraNoteContent* content = note->content;
-
+static DataPiece*  litera_note_add_piece_internal(LiteraNoteContent* content, const DataPiece* piece) {
 	if(content->len == content->cap) {
 		void* newBuf = realloc(content->buffer, sizeof(DataPiece) * content->cap * 2);
 		assert(newBuf);
 		content->buffer = (DataPiece*)newBuf;
 	}
 
+    int curr = content->len++;
 	//I'm not sure how bad is it.
-	content->buffer[content->len++] = *piece;
+	content->buffer[curr] = *piece;
+    return content->buffer + curr;
+}
+
+void               litera_note_add_piece(LiteraNote* note, const DataPiece* piece) {
+	assert(note);
+	LiteraNoteContent* content = note->content;
+	litera_note_add_piece_internal(content, piece);
 }
 
 DataPiece*         litera_note_add_text(LiteraNote* note, const char* text, int len) {
-	DataPiece* piece = litera_note_create_text_piece(len);
-	memcpy(piece->text.text, text, len);
+	DataPiece piece;
+	litera_note_init_text_piece(&piece, len);
+	
+	//TODO: refactor
+	if (text != NULL ) {
+		memcpy(piece.text.text, text, len);
+	}
 
-	litera_note_add_piece(note, piece);
-	return piece;
+	return litera_note_add_piece_internal(note->content, &piece);
 }
 
 void               litere_note_remove_piece(LiteraNote* note, DataPiece* piece) {

@@ -245,6 +245,7 @@ void litera_notepad_page_refresh(LiteraNotepadPage* page) {
 		return;
 	}
 
+	//TODO: make non cancellable operation
 	GtkTextBuffer* buffer = gtk_text_view_get_buffer(page->textView);
 	GtkTextIter start, end;
 	LiteraNoteContentIterator iter;
@@ -258,12 +259,7 @@ void litera_notepad_page_refresh(LiteraNotepadPage* page) {
 	do {
 		DataPiece* piece = litera_note_content_iterator_get_current(&iter);
 		if(piece->type == DATA_PIECE_TEXT) {
-			gchar* testBuf = g_new(gchar, piece->text.len + 1);
-			memcpy(testBuf, piece->text.text, piece->text.len);
-			testBuf[piece->text.len] = '\0';
-			gint l = strlen(testBuf);
 			gtk_text_buffer_insert_at_cursor(buffer, piece->text.text, piece->text.len);
-			g_free(testBuf);
 		}
 	} while (litera_note_content_iterator_move_next(&iter));
 }

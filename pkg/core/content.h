@@ -11,7 +11,7 @@ bool       litera_note_content_iterator_move_next(LiteraNoteContentIterator* ite
 DataPiece*         litera_note_create_text_piece(int len);
 
 LiteraNoteContent* litera_note_create_content(int capacity);
-void               litera_note_add_piece(LiteraNote* note, DataPiece* piece);
+void               litera_note_add_piece(LiteraNote* note, const DataPiece* piece);
 DataPiece*         litera_note_add_text(LiteraNote* note, const char* text, int len);
 void               litere_note_remove_piece(LiteraNote* note, DataPiece* piece);
 void               litera_note_clear(LiteraNote* note);

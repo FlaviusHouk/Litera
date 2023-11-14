@@ -137,7 +137,7 @@ static LiteraNote** evernote_get_notes(void* state, LiteraUser* user, LiteraNote
 	return notes;
 }
 
-static DataPiece* evernote_parse_div(xmlNodePtr node) {
+static void evernote_parse_div(LiteraNote* note, xmlNodePtr node) {
 	gint len = 0;
 
 	xmlNodePtr child = node->children;
@@ -157,7 +157,7 @@ static DataPiece* evernote_parse_div(xmlNodePtr node) {
 		child = child->next;
 	}
 	
-	DataPiece* piece = litera_note_create_text_piece(len);
+	DataPiece* piece = litera_note_add_text(note, NULL, len);
 	TextPiece* text = &piece->text;
 
 	child = node->children;
@@ -175,16 +175,15 @@ static DataPiece* evernote_parse_div(xmlNodePtr node) {
 
 		child = child->next;
 	}
-
-	return piece;
 }
 
 static void evernote_parse_xhtml_content(gchar* xhtml, gint len, LiteraNote* note) {
+	g_print("%s\n", xhtml);
+	int l2 = strlen(xhtml);
 	xmlDocPtr doc = xmlReadMemory(xhtml, len, NULL, NULL, 0);
 
 	g_assert(doc);
 
-	g_print("%s\n", xhtml);
 	len = 0;
 
 	xmlNodePtr root = xmlDocGetRootElement(doc);
@@ -198,8 +197,7 @@ static void evernote_parse_xhtml_content(gchar* xhtml, gint len, LiteraNote* not
 	while(child != NULL) {
 		/* Paragraph */
 		if (xmlStrEqual(child->name, (const xmlChar*)"div") == 1) {
-			DataPiece* paragraphPiece = evernote_parse_div(child);
-			litera_note_add_piece(note, paragraphPiece);
+			evernote_parse_div(note, child);
 		}
 
 		child = child->next;
@@ -212,7 +210,7 @@ static void evernote_refresh_note_content(void* state, LiteraUser* user, LiteraN
 	EDAMUserException* userException = NULL;
 	EDAMSystemException* systemException = NULL;
 	EDAMNotFoundException * notFoundException = NULL;
-	NoteMetadata* evNote = (NoteMetadata*)note->state;
+	NoteMetadata* evNote = NOTE_METADATA(note->state);
 	printf("Note id is %s\n", evNote->guid);
 
 	gchar* content = g_new(gchar, evNote->contentLength);
@@ -340,6 +338,8 @@ static void evernote_save_content(void* state, LiteraUser* user, LiteraNote* not
 	sendNote->content = NULL;
 	sendNote->__isset_content = FALSE;
 	g_object_unref(G_OBJECT(sendNote));
+
+    metadata->contentLength = xmlContentLen;
 }
 
 static EvernoteState state =
