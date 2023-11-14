@@ -13,9 +13,9 @@ typedef struct backend_t {
 	void (*logout)(void* state, LiteraUser* currentUser);
 	LiteraNotebook** (*get_notebooks)(void* state, LiteraUser* currentUser);
 	LiteraNote** (*get_notes)(void* state, LiteraUser* currentUser, LiteraNotebook* notebook);
-	DataPiece* (*get_content)(void* state, LiteraUser* currentUser,  LiteraNote* note);
-	DataPiece* (*refresh_content)(void* state, LiteraUser* currentUser,  LiteraNote* note);
-	void (*save_content)(void* state, LiteraUser* user, LiteraNote* note, DataPiece* content);
+	void (*get_content)(void* state, LiteraUser* currentUser,  LiteraNote* note);
+	void (*refresh_content)(void* state, LiteraUser* currentUser,  LiteraNote* note);
+	void (*save_content)(void* state, LiteraUser* user, LiteraNote* note);
 	void* state;
 } Backend;
 

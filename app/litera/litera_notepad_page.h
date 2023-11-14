@@ -12,6 +12,6 @@ void                litera_notepad_page_set_notebooks(LiteraNotepadPage* page, L
 LiteraNotebook*     litera_notepad_page_get_selected_notebook(LiteraNotepadPage* page);
 void                litera_notepad_page_set_notes(LiteraNotepadPage* page, LiteraNote** notebooks);
 LiteraNote*         litera_notepad_page_get_selected_note(LiteraNotepadPage* page);
-void                litera_notepad_page_set_content(LiteraNotepadPage* page, DataPiece* content);
+void                litera_notepad_page_refresh(LiteraNotepadPage* page);
 
 #endif //_LITERA_NOTEPAD_PAGE_H_

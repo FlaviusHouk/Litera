@@ -23,7 +23,7 @@ LiteraUser*      core_state_login_dev(State* state, char* token);
 void             core_state_logout(State* state);
 LiteraNotebook** core_state_get_notebooks(State* state);
 LiteraNote**     core_state_get_notes(State* state, LiteraNotebook* notebook);
-DataPiece*       core_state_get_content(State* state, LiteraNote* note);
-void             core_state_set_content(State* state, LiteraNote* note, DataPiece* content);
+void             core_state_refresh_content(State* state, LiteraNote* note);
+void             core_state_save_content(State* state, LiteraNote* note);
 
 #endif //_CORE_STATE_H_

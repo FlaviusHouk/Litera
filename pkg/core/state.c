@@ -81,14 +81,15 @@ LiteraNote**     core_state_get_notes(State* state, LiteraNotebook* notebook) {
 	return state->backend.get_notes(backendState, state->currentUser, notebook);
 }
 
-DataPiece*           core_state_get_content(State* state, LiteraNote* note) {
+void           core_state_refresh_content(State* state, LiteraNote* note) {
     void* backendState = state->backend.state;
-	return state->backend.get_content(backendState, state->currentUser, note);
+	
+	state->backend.refresh_content(backendState, state->currentUser, note);
 }
 
-void core_state_set_content(State* state, LiteraNote* note, DataPiece* content) {
+void core_state_save_content(State* state, LiteraNote* note) {
 	void* backendState = state->backend.state;
-	state->backend.save_content(backendState, state->currentUser, note, content);
+	state->backend.save_content(backendState, state->currentUser, note);
 }
 
 static void state_try_load_user(State* state) {

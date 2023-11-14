@@ -9,7 +9,7 @@
 
 #include "user_store.h"
 #include "note_store.h"
-//#include "dtd.h"
+#include "content.h"
 
 typedef struct _evernote_backend_state {
 	UserStoreClient* userClient;
@@ -137,10 +137,8 @@ static LiteraNote** evernote_get_notes(void* state, LiteraUser* user, LiteraNote
 	return notes;
 }
 
-static void evernote_parse_div(xmlNodePtr node, DataPiece* data) {
-	TextPiece* text = &(data->text);
-	text->type = DATA_PIECE_TEXT;
-	text->len = 0;
+static DataPiece* evernote_parse_div(xmlNodePtr node) {
+	gint len = 0;
 
 	xmlNodePtr child = node->children;
 	int currIdx = 0;
@@ -150,85 +148,65 @@ static void evernote_parse_div(xmlNodePtr node, DataPiece* data) {
 		if(child->type == XML_TEXT_NODE) {
 			xmlChar* content = child->content;
 			int currLen = xmlStrlen(content);	
-            if (content[currLen - 1] == '\0') {
-				currLen--;
-			}
-
-			text->len += currLen;
-		} else if (xmlStrcmp(child->name, (const xmlChar*)"br") == 0) {
-			text->len++;
+			
+			len += currLen;
+		} else if (xmlStrcmp(child->name, BAD_CAST"br") == 0) {
+			len++;
 		}
 
 		child = child->next;
 	}
+    
+	DataPiece* piece = litera_note_create_text_piece(len);
+	TextPiece* text = &piece->text;
 
-	text->text = g_new(gchar, text->len);
 	child = node->children;
     while(child != NULL) {
 		if(child->type == XML_TEXT_NODE) {
 			xmlChar* content = child->content;
 			gchar* buffStart = text->text + currIdx;
             int currLen = xmlStrlen(content);
-            if (content[currLen - 1] == '\0') {
-				currLen--;
-			}
 
 			memcpy(buffStart, content, currLen);
 			currIdx += currLen;
-		} else if (xmlStrcmp(child->name, (const xmlChar*)"br") == 0) {
+		} else if (xmlStrcmp(child->name, BAD_CAST"br") == 0) {
 			text->text[currIdx++] = '\n';
 		}
 
 		child = child->next;
 	}
+
+	return piece;
 }
 
-static GArray* evernote_parse_xhtml_content(gchar* xhtml, gint len) {
+static void evernote_parse_xhtml_content(gchar* xhtml, gint len, LiteraNote* note) {
 	xmlDocPtr doc = xmlReadMemory(xhtml, len, NULL, NULL, 0);
 
 	g_assert(doc);
 
 	g_print("%s\n", xhtml);
-    
-	GArray* arr = g_array_new(FALSE, FALSE, sizeof(DataPiece));
-	g_array_set_size(arr, 1);
     len = 0;
 
 	xmlNodePtr root = xmlDocGetRootElement(doc);
 	if(root == NULL || xmlStrEqual(root->name, (xmlChar*)"en-note") != 1) {
 		printf("%s\n", "cannot get root element");
-	    DataPiece* p = &g_array_index(arr, DataPiece, 0);
-		p->type = DATA_PIECE_END;
 		
-		return arr;
+		return;
 	}
-
-	unsigned long childrenCount = xmlChildElementCount(root);
-	g_array_set_size(arr, childrenCount);
 
 	xmlNodePtr child = root->children;
 	while(child != NULL) {
-		DataPiece* cur = &g_array_index(arr, DataPiece, len++);
-		
 		/* Paragraph */
 		if (xmlStrEqual(child->name, (const xmlChar*)"div") == 1) {
-			evernote_parse_div(child, cur);
+			DataPiece* paragraphPiece = evernote_parse_div(child);
+			litera_note_add_piece(note, paragraphPiece);
 		}
 
 		child = child->next;
 	}
-
-	if(arr->len >= len) {
-		g_array_set_size(arr, arr->len + 1);
-	}
-	
-	DataPiece* end = &g_array_index(arr, DataPiece, len++);
-	end->type = DATA_PIECE_END;
-
-	return arr;
 }
 
-static DataPiece* evernote_refresh_note_content(void* state, LiteraUser* user, LiteraNote* note) {
+static void evernote_refresh_note_content(void* state, LiteraUser* user, LiteraNote* note) {
 	EvernoteState* this = (EvernoteState*)state;
 	GError* err = NULL;
 	EDAMUserException* userException = NULL;
@@ -238,46 +216,35 @@ static DataPiece* evernote_refresh_note_content(void* state, LiteraUser* user, L
 	printf("Note id is %s\n", evNote->guid);
 
     gchar* content = g_new(gchar, evNote->contentLength);
+	if(note->content != NULL) {
+		litera_note_clear(note);
+	} else {
+		note->content = litera_note_create_content(/*capacity*/4);
+	}
 
     if(!note_store_if_get_note_content (NOTE_STORE_IF(this->noteStore), &content, user->access_token, evNote->guid, &userException, &systemException, &notFoundException, &err)) {
 		printf("%s: %s\n", "cannot get note content", err->message);
 		if(userException != NULL) {
 			printf("User exception, code: %d\n", userException->errorCode);
 		}
-		return NULL;
+
+		return;
 	}
 
-	GArray* p = evernote_parse_xhtml_content(content, evNote->contentLength);
+	evernote_parse_xhtml_content(content, evNote->contentLength, note);
+
 	g_free(content);
-
-	if(note->content != NULL) {
-		for(int i = 0; note->content[i].type != DATA_PIECE_END; ++i) {
-			DataPiece p = note->content[i];
-			
-			if(p.type == DATA_PIECE_TEXT) {
-				TextPiece t = p.text;
-
-				g_free(t.text);
-			}
-		}
-
-		g_free(note->content);
-	}
-
-	note->content = (DataPiece*)p->data;
-	
-	return note->content;
 }
 
-static DataPiece* evernote_get_note_content(void* state, LiteraUser* user, LiteraNote* note) {
-	if (note->content == NULL) {
-		return evernote_refresh_note_content(state, user, note);
+static void evernote_get_note_content(void* state, LiteraUser* user, LiteraNote* note) {
+	if (note->content != NULL) {
+		return;
 	}
 
-	return note->content;
+	evernote_refresh_note_content(state, user, note);
 }
 
-static xmlDocPtr evernote_format_enml(DataPiece* content) {
+static xmlDocPtr evernote_format_enml(LiteraNote* note) {
 	xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0"); /*xmlVersion*/
 
     xmlNodePtr root = xmlNewNode(/*ns*/ NULL, BAD_CAST "en-note");
@@ -285,30 +252,43 @@ static xmlDocPtr evernote_format_enml(DataPiece* content) {
 
     xmlDtdPtr dtd = xmlCreateIntSubset(doc, BAD_CAST "en-note", NULL, BAD_CAST "http://xml.evernote.com/pub/enml2.dtd");
 
-    gint i = 0;
-	while(content[i].type != DATA_PIECE_END) {
-		if(content[i].type == DATA_PIECE_TEXT) {
+	LiteraNoteContentIterator iter;
+	litera_note_iterate(note, &iter);
+	do {
+		DataPiece* piece = litera_note_content_iterator_get_current(&iter);
+
+		if(piece->type == DATA_PIECE_TEXT) {
 			xmlNodePtr div = xmlNewNode(/*ns*/NULL, BAD_CAST "div");
-			xmlChar* textContent = xmlCharStrdup(content[i].text.text);
+			char* pos = strchr(piece->text.text, '\n');
+			
+			xmlChar* textContent;
+			gboolean haveNewline = pos != NULL;
+			if (!haveNewline) {
+				textContent = xmlCharStrdup(piece->text.text);
+			} else {
+				int len = pos - piece->text.text;
+				textContent = xmlCharStrndup(piece->text.text, len);
+			}
+
 			xmlNodeAddContent(div, textContent);
    
-            xmlNodePtr br = xmlNewNode(/*ns*/NULL, BAD_CAST "br");
-			xmlSetProp(br, BAD_CAST "clear", BAD_CAST "none");
+            if(haveNewline) {
+            	xmlNodePtr br = xmlNewNode(/*ns*/NULL, BAD_CAST "br");
+				xmlSetProp(br, BAD_CAST "clear", BAD_CAST "none");
 
-			xmlAddChild(div, br);
+				xmlAddChild(div, br);
+			}
 
 			xmlFree(textContent);
 
 			xmlAddChild(root, div);
 		}
-
-		i++;
-	}
-
+	} while(litera_note_content_iterator_move_next(&iter));
+		
 	return doc;
 }
 
-static void evernote_save_content(void* state, LiteraUser* user, LiteraNote* note, DataPiece* content) {	
+static void evernote_save_content(void* state, LiteraUser* user, LiteraNote* note) {
 	xmlChar* rawXml;
 	gint xmlContentLen;
     GError* err = NULL;
@@ -317,7 +297,7 @@ static void evernote_save_content(void* state, LiteraUser* user, LiteraNote* not
 	EDAMNotFoundException* notFoundException = NULL;
 	EvernoteState* this = (EvernoteState*)state;
 
-	xmlDocPtr xmlContent = evernote_format_enml(content);
+	xmlDocPtr xmlContent = evernote_format_enml(note);
 	xmlDocDumpFormatMemoryEnc(xmlContent, &rawXml, &xmlContentLen, "UTF-8", /*formating spaces*/0);
 
 	NoteMetadata* metadata = NOTE_METADATA(note->state);

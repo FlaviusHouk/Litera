@@ -4,7 +4,8 @@ evernote_backend_sources = [
 ]
 
 local_deps = [
-  evernote_sdk_lib
+  evernote_sdk_lib,
+  core_lib
 ]
 
 local_includes = [

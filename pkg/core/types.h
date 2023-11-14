@@ -33,12 +33,19 @@ typedef union {
 	ImagePiece image;
 } DataPiece;
 
+typedef struct litera_note_content_t LiteraNoteContent; 
+
+typedef struct {
+	LiteraNoteContent* content;
+	int initialLen;
+	int currentIdx;
+} LiteraNoteContentIterator;
+
 typedef struct {
 	char* title;
+	LiteraNoteContent* content;
+	
 	void* state;
-	DataPiece* content;
 } LiteraNote;
-
-void litera_note_set_content(LiteraNote* note, DataPiece* content);
 
 #endif //_CORE_TYPES_H_

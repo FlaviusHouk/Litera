@@ -35,17 +35,17 @@ static void litera_app_main_window_on_note_change(GObject* obj, GParamSpec* spec
 		return;
 	}
 
-	DataPiece* content = core_state_get_content(win->state, selected);
-	litera_notepad_page_set_content(page, content);
+	core_state_refresh_content(win->state, selected);
+	litera_notepad_page_refresh(page);
 }
 
 static void litera_app_main_window_refresh_note(GObject* page, LiteraNote* selectedNote, LiteraAppMainWindow* win) {
-	DataPiece* content = core_state_get_content(win->state, selectedNote);
-	litera_notepad_page_set_content(LITERA_NOTEPAD_PAGE(page), content);
+	core_state_refresh_content(win->state, selectedNote);
+	litera_notepad_page_refresh(LITERA_NOTEPAD_PAGE(page));
 }
 
-static void litera_app_main_window_save_note(GObject* page, LiteraNote* note, DataPiece* content, LiteraAppMainWindow* win) {
-	core_state_set_content(win->state, note, content);
+static void litera_app_main_window_save_note(GObject* page, LiteraNote* note, LiteraAppMainWindow* win) {
+	core_state_save_content(win->state, note);
 }
 
 static void litera_app_main_window_on_dev_login(GObject* page, gchar* token, LiteraAppMainWindow* win) {
