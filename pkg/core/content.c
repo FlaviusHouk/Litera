@@ -105,17 +105,19 @@ DataPiece*         litera_note_add_text(LiteraNote* note, const char* text, int 
 }
 
 void               litere_note_remove_piece(LiteraNote* note, DataPiece* piece) {
-	LiteraNoteContentIterator iter;
-	litera_note_iterate(note, &iter);
-	int idx = -1;
+	assert(note);
+	LiteraNoteContent* content = note->content;
+    int i = 0, idx = -1;
+
 	do {
-		DataPiece* existing = litera_note_content_iterator_get_current(&iter);
+		DataPiece* existing = content->buffer + i;
 		
 		if(piece == existing) {
-			idx = iter.currentIdx;
 			break;
 		}
-	} while(litera_note_content_iterator_move_next(&iter));
+
+		i++;
+	} while(i < content->len);
 
 	if(idx == -1) {
 		return;
@@ -125,7 +127,6 @@ void               litere_note_remove_piece(LiteraNote* note, DataPiece* piece) 
 		free(piece->text.text);
 	}
 
-	LiteraNoteContent* content = note->content;
 	int lenToMove = content->len - idx + 1;
 	if (lenToMove != 0) {
 		memcpy(content->buffer + idx, content->buffer + idx + 1, sizeof(DataPiece) * lenToMove);
