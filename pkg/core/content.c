@@ -55,14 +55,6 @@ void litera_note_init_text_piece(DataPiece* piece, int len) {
 	piece->text.len = len;
 }
 
-DataPiece*         litera_note_create_text_piece(int len) {
-	DataPiece* piece = (DataPiece*)malloc(sizeof(DataPiece));
-
-	litera_note_init_text_piece(piece, len);
-
-	return piece;
-}
-
 LiteraNoteContent* litera_note_create_content(int capacity) {
 	LiteraNoteContent* content = (LiteraNoteContent*) malloc(sizeof(LiteraNoteContent));
 
@@ -73,7 +65,7 @@ LiteraNoteContent* litera_note_create_content(int capacity) {
 	return content;
 }
 
-static DataPiece*  litera_note_add_piece_internal(LiteraNoteContent* content, const DataPiece* piece) {
+static DataPiece*  litera_note_add_piece_internal(LiteraNoteContent* content, DataPiece piece) {
 	if(content->len == content->cap) {
 		void* newBuf = realloc(content->buffer, sizeof(DataPiece) * content->cap * 2);
 		assert(newBuf);
@@ -81,12 +73,12 @@ static DataPiece*  litera_note_add_piece_internal(LiteraNoteContent* content, co
 	}
 
     int curr = content->len++;
-	//I'm not sure how bad is it.
-	content->buffer[curr] = *piece;
+	content->buffer[curr] = piece;
+
     return content->buffer + curr;
 }
 
-void               litera_note_add_piece(LiteraNote* note, const DataPiece* piece) {
+void               litera_note_add_piece(LiteraNote* note, DataPiece piece) {
 	assert(note);
 	LiteraNoteContent* content = note->content;
 	litera_note_add_piece_internal(content, piece);
@@ -101,7 +93,7 @@ DataPiece*         litera_note_add_text(LiteraNote* note, const char* text, int 
 		memcpy(piece.text.text, text, len);
 	}
 
-	return litera_note_add_piece_internal(note->content, &piece);
+	return litera_note_add_piece_internal(note->content, piece);
 }
 
 void               litere_note_remove_piece(LiteraNote* note, DataPiece* piece) {

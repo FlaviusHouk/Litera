@@ -178,8 +178,6 @@ static void evernote_parse_div(LiteraNote* note, xmlNodePtr node) {
 }
 
 static void evernote_parse_xhtml_content(gchar* xhtml, gint len, LiteraNote* note) {
-	g_print("%s\n", xhtml);
-	int l2 = strlen(xhtml);
 	xmlDocPtr doc = xmlReadMemory(xhtml, len, NULL, NULL, 0);
 
 	g_assert(doc);
