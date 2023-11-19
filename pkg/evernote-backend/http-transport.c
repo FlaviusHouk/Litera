@@ -151,12 +151,14 @@ static gboolean evernote_http_transport_flush(ThriftTransport* transport, GError
 	GError* err = NULL;
 	EvernoteHttpTransport* this = EVERNOTE_HTTP_TRANSPORT(transport);
 
-	if(!g_output_stream_close(this->output, NULL, &err)) {
+    GOutputStream* oldOutput = this->output;
+	this->output = g_memory_output_stream_new_resizable();
+	if(!g_output_stream_close(oldOutput, NULL, &err)) {
 		g_propagate_error(error, err);
 		return FALSE;
 	}
 
-	GBytes* bytes = g_memory_output_stream_steal_as_bytes(G_MEMORY_OUTPUT_STREAM(this->output));
+	GBytes* bytes = g_memory_output_stream_steal_as_bytes(G_MEMORY_OUTPUT_STREAM(oldOutput));
 	SoupMessage* msg = soup_message_new("POST", this->url);
 	gsize dataSize = 0;
 	gpointer data = g_bytes_unref_to_data(bytes, &dataSize);
@@ -177,8 +179,7 @@ static gboolean evernote_http_transport_flush(ThriftTransport* transport, GError
 	GBytes* respData = soup_buffer_get_as_bytes(resp);
 	this->input = g_memory_input_stream_new_from_bytes(respData);
 
-	g_object_unref(G_OBJECT(this->output));
-	this->output = g_memory_output_stream_new_resizable();
+	g_object_unref(G_OBJECT(oldOutput));
 
 	soup_buffer_free(resp);
 	g_object_unref(msg);
