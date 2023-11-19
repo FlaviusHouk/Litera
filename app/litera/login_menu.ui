@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+<menu id="login-menu">
+	<section>
+		<item>
+			<attribute name="label">Settings</attribute>
+			<attribute name="action">litera.settings</attribute>
+		</item>
+		<item>
+			<attribute name="label">About</attribute>
+			<attribute name="action">app.about</attribute>
+		</item>
+		<item>
+			<attribute name="label">Quit</attribute>
+			<attribute name="action">win.close</attribute>
+		</item>
+	</section>
+</menu>
+</interface>

@@ -10,6 +10,12 @@ struct _LiteraAppMainWindow {
 	GtkMenuButton* menuButton;
 	LiteraLoginPage* loginPage;
 	LiteraNotepadPage* notepadPage;
+	LiteraSettingsPage* settingsPage;
+
+	GSimpleActionGroup* defaultGroup;
+	AppPage pageStore[4];
+	int pageStoreIdx; 
+
 	State* state;
 
 	gulong loginDevHandlerId;
@@ -17,9 +23,33 @@ struct _LiteraAppMainWindow {
 
 G_DEFINE_TYPE(LiteraAppMainWindow, litera_app_main_window, GTK_TYPE_APPLICATION_WINDOW);
 
-static void litera_app_main_window_on_settings_button_click(GtkButton* button, gpointer userData) {
-	LiteraAppMainWindow* win = (LiteraAppMainWindow*)userData;
+static void litera_app_main_window_open_settings(GSimpleAction* action, GVariant* param, gpointer userData) {
+	litera_app_main_window_set_page(LITERA_APP_MAIN_WINDOW(userData), SETTINGS); 
 }
+
+static void litera_app_main_window_close(GSimpleAction* action, GVariant* param, gpointer userData) {
+	gtk_window_close(GTK_WINDOW(userData));
+}
+
+static void litera_app_main_window_go_back (GSimpleAction* action, GVariant* param, gpointer userData) {
+	LiteraAppMainWindow* win = LITERA_APP_MAIN_WINDOW(userData);
+
+	//TODO: disable
+	if(win->pageStoreIdx < 0) {
+		return;
+	}
+
+	litera_app_main_window_set_page(win, win->pageStore[win->pageStoreIdx--]);
+}
+
+const GActionEntry custom_entries[] = {
+	{ "settings", litera_app_main_window_open_settings, NULL, NULL, NULL },
+	{ "back",     litera_app_main_window_go_back,       NULL, NULL, NULL }
+};
+
+const GActionEntry window_entries[] = {
+	{ "close", litera_app_main_window_close, NULL, NULL, NULL },
+};
 
 static void litera_app_main_window_on_select_notebook(GObject* obj, GParamSpec* spec, LiteraAppMainWindow* win) {
 	LiteraNotepadPage* page = LITERA_NOTEPAD_PAGE(obj);
@@ -60,19 +90,21 @@ static void litera_app_main_window_on_dev_login(GObject* page, gchar* token, Lit
 
 	litera_notepad_page_set_notebooks(win->notepadPage, notebooks);
 
-	gtk_stack_set_visible_child_name(win->rootPanel, "NotepadPage");
+	litera_app_main_window_set_page(win, NOTEPAD);
 }
 
 static void litera_app_main_window_init (LiteraAppMainWindow* win) {
 	gtk_widget_init_template(GTK_WIDGET(win));
 
+	g_action_map_add_action_entries(G_ACTION_MAP(win), window_entries, 1, win);
+
 	win->loginDevHandlerId = g_signal_connect(win->loginPage, "login-dev", G_CALLBACK(litera_app_main_window_on_dev_login), win);
 	
-	GtkBuilder* b = gtk_builder_new_from_resource("/litera/app_menu.ui");
-	GMenuModel* menu = G_MENU_MODEL(gtk_builder_get_object(b, "app-menu"));
+	win->defaultGroup = g_simple_action_group_new();
+	g_action_map_add_action_entries(G_ACTION_MAP(win->defaultGroup), custom_entries, 2, win);
+	gtk_widget_insert_action_group(GTK_WIDGET(win->menuButton), "litera", G_ACTION_GROUP(win->defaultGroup));
 
-	gtk_menu_button_set_menu_model(win->menuButton, menu);
-	g_object_unref(G_OBJECT(b));
+	litera_app_main_window_set_page(win, LOGIN);
 }
 
 static void litera_app_main_window_dispose (GObject* obj) {
@@ -105,4 +137,35 @@ LiteraAppMainWindow* litera_app_main_window_new(LiteraApp* app, State* state) {
 
 AppPage litera_app_main_window_get_page(LiteraAppMainWindow* app) {
 	return app->page;
+}
+
+void    litera_app_main_window_set_page(LiteraAppMainWindow* win, AppPage page) {
+	GtkBuilder* b = NULL; 
+	GMenuModel* menu = NULL;
+
+	win->pageStore[win->pageStoreIdx++] = win->page;
+
+	switch(page) {
+		case SETTINGS:
+			b = gtk_builder_new_from_resource("/litera/settings_menu.ui");
+			menu = G_MENU_MODEL(gtk_builder_get_object(b, "settings-menu"));
+			gtk_stack_set_visible_child_name(win->rootPanel, "SettigsPage");
+			break;
+		case LOGIN:
+			b = gtk_builder_new_from_resource("/litera/login_menu.ui");
+			menu = G_MENU_MODEL(gtk_builder_get_object(b, "login-menu"));
+			gtk_stack_set_visible_child_name(win->rootPanel, "LoginPage");
+			break;
+		case NOTEPAD:
+			b = gtk_builder_new_from_resource("/litera/notepad_menu.ui");
+			menu = G_MENU_MODEL(gtk_builder_get_object(b, "notepad-menu"));
+			gtk_stack_set_visible_child_name(win->rootPanel, "NotepadPage");
+			break;
+	}
+	
+	win->page = page;
+
+	gtk_menu_button_set_menu_model(win->menuButton, menu);
+
+	g_object_unref(G_OBJECT(b));
 }
