@@ -34,7 +34,11 @@ G_DEFINE_TYPE(LiteraNotepadPage, litera_notepad_page, GTK_TYPE_WIDGET);
 static void litera_notepad_page_dispose(GObject* obj) {
 	gtk_widget_dispose_template(GTK_WIDGET(obj), LITERA_NOTEPAD_PAGE_TYPE);
 
-	LiteraNotepadPage* this = LITERA_NOTEPAD_PAGE(obj);
+	GtkWidget* child = gtk_widget_get_first_child(GTK_WIDGET(obj));
+	do {
+		gtk_widget_unparent(child);
+		child = gtk_widget_get_first_child(GTK_WIDGET(obj));
+	} while(child != NULL);
 
 	G_OBJECT_CLASS(litera_notepad_page_parent_class)->dispose(obj);
 }
@@ -175,11 +179,24 @@ static void litera_notepad_page_on_save(GtkButton* button, LiteraNotepadPage* pa
 	g_signal_emit(page, litera_notepad_page_save_signal_id, 0, page->selectedNote);
 }
 
+static void litera_notepad_page_on_note_selected(GtkListBox* box, GtkListBoxRow* row, LiteraNotepadPage* page) {
+	if (row == NULL) {
+		g_object_set(G_OBJECT(page), "selected-note", NULL, NULL);
+		return;
+	}
+
+	gint idx = gtk_list_box_row_get_index(row);
+	LiteraNote* note = page->notes[idx];
+
+	g_object_set(G_OBJECT(page), "selected-note", note, NULL);
+}
+
 static void litera_notepad_page_init(LiteraNotepadPage* widget) {
 	gtk_widget_init_template(GTK_WIDGET(widget));
 
 	g_signal_connect(widget->refreshButton, "clicked", G_CALLBACK(litera_notepad_page_on_refresh), widget);
 	g_signal_connect(widget->saveButton, "clicked", G_CALLBACK(litera_notepad_page_on_save), widget);
+	g_signal_connect(widget->notesList, "row-selected", G_CALLBACK(litera_notepad_page_on_note_selected), widget);
 }
 
 void litera_notepad_page_set_notebooks(LiteraNotepadPage* page, LiteraNotebook** notebooks) {
@@ -201,20 +218,6 @@ void litera_notepad_page_set_notebooks(LiteraNotepadPage* page, LiteraNotebook**
 	}
 }
 
-static void litera_notepad_page_on_note_selected(GtkListBox* box, GtkListBoxRow* row, LiteraNotepadPage* page) {
-	if (row == NULL) {
-		g_object_set(G_OBJECT(page), "selected-note", NULL, NULL);
-		return;
-	}
-
-	gint idx = gtk_list_box_row_get_index(row);
-	LiteraNote* note = page->notes[idx];
-
-	g_object_set(G_OBJECT(page), "selected-note", note, NULL);
-	
-	
-}
-
 void litera_notepad_page_set_notes(LiteraNotepadPage* page, LiteraNote** notes) {
 	page->notes = notes;
 	gint i = 0;
@@ -227,8 +230,6 @@ void litera_notepad_page_set_notes(LiteraNotepadPage* page, LiteraNote** notes) 
 
 		gtk_list_box_append(page->notesList, row);
 	}
-
-	g_signal_connect(page->notesList, "row-selected", G_CALLBACK(litera_notepad_page_on_note_selected), page);
 }
 
 LiteraNotebook*	 litera_notepad_page_get_selected_notebook(LiteraNotepadPage* page) {
