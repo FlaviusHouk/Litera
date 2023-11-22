@@ -180,13 +180,12 @@ static void litera_notepad_page_on_save(GtkButton* button, LiteraNotepadPage* pa
 }
 
 static void litera_notepad_page_on_note_selected(GtkListBox* box, GtkListBoxRow* row, LiteraNotepadPage* page) {
-	if (row == NULL) {
-		g_object_set(G_OBJECT(page), "selected-note", NULL, NULL);
-		return;
-	}
+	LiteraNote* note = NULL;
 
-	gint idx = gtk_list_box_row_get_index(row);
-	LiteraNote* note = page->notes[idx];
+	if (row != NULL) {
+		gint idx = gtk_list_box_row_get_index(row);
+		note = page->notes[idx];
+	}
 
 	g_object_set(G_OBJECT(page), "selected-note", note, NULL);
 }
