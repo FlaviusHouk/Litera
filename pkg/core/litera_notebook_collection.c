@@ -53,7 +53,7 @@ void litera_notebook_collection_add(LiteraNotebookCollection* c, LiteraNotebook 
 		c->buffer = (LiteraNotebook*)newBuf;
 	}
 
-    int curr = c->len++;
+	int curr = c->len++;
 	c->buffer[curr] = notebook;
 }
 

@@ -151,7 +151,7 @@ static gboolean evernote_http_transport_flush(ThriftTransport* transport, GError
 	GError* err = NULL;
 	EvernoteHttpTransport* this = EVERNOTE_HTTP_TRANSPORT(transport);
 
-    GOutputStream* oldOutput = this->output;
+	GOutputStream* oldOutput = this->output;
 	this->output = g_memory_output_stream_new_resizable();
 	if(!g_output_stream_close(oldOutput, NULL, &err)) {
 		g_propagate_error(error, err);

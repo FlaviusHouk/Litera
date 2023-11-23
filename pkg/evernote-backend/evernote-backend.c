@@ -27,7 +27,7 @@ static void evernote_init(void* state) {
 	GError* err = NULL;
 	EvernoteState* this = (EvernoteState*)state;
 
-    int len = snprintf(NULL, 0, "%s/edam/user", config.baseUrl);
+	int len = snprintf(NULL, 0, "%s/edam/user", config.baseUrl);
 	gchar* url = g_new(gchar, len);
 	sprintf(url, "%s/edam/user", config.baseUrl);
 
@@ -349,7 +349,7 @@ static void evernote_save_content(void* state, LiteraUser* user, LiteraNote* not
 	sendNote->__isset_content = FALSE;
 	g_object_unref(G_OBJECT(sendNote));
 
-    metadata->contentLength = xmlContentLen;
+	metadata->contentLength = xmlContentLen;
 }
 
 static EvernoteState state =

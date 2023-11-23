@@ -72,10 +72,10 @@ static DataPiece*  litera_note_add_piece_internal(LiteraNoteContent* content, Da
 		content->buffer = (DataPiece*)newBuf;
 	}
 
-    int curr = content->len++;
+	int curr = content->len++;
 	content->buffer[curr] = piece;
 
-    return content->buffer + curr;
+	return content->buffer + curr;
 }
 
 void               litera_note_add_piece(LiteraNote* note, DataPiece piece) {
@@ -99,7 +99,7 @@ DataPiece*         litera_note_add_text(LiteraNote* note, const char* text, int 
 void               litere_note_remove_piece(LiteraNote* note, DataPiece* piece) {
 	assert(note);
 	LiteraNoteContent* content = note->content;
-    int i = 0, idx = -1;
+	int i = 0, idx = -1;
 
 	do {
 		DataPiece* existing = content->buffer + i;
