@@ -13,22 +13,22 @@ struct litera_note_content_t {
 /* Iterator */
 void       litera_note_content_iterator_reset(LiteraNoteContentIterator* iter) {
 	assert(iter);
-	assert(iter->content->len == iter->initialLen);
+	assert(iter->collection->len == iter->initialLen);
 
-	iter->initialLen = 0;
+	iter->currentIdx = 0;
 }
 
 DataPiece* litera_note_content_iterator_get_current(LiteraNoteContentIterator* iter) {
 	assert(iter);
-	assert(iter->content->len == iter->initialLen);
+	assert(iter->collection->len == iter->initialLen);
 	assert(iter->currentIdx < iter->initialLen);
 
-	return iter->content->buffer + iter->currentIdx;
+	return iter->collection->buffer + iter->currentIdx;
 }
 
 bool       litera_note_content_iterator_move_next(LiteraNoteContentIterator* iter) {
 	assert(iter);
-	assert(iter->content->len == iter->initialLen);
+	assert(iter->collection->len == iter->initialLen);
 
 	++iter->currentIdx;
 
@@ -36,7 +36,7 @@ bool       litera_note_content_iterator_move_next(LiteraNoteContentIterator* ite
 }
 
 static void init_iterartor(LiteraNoteContent* content, LiteraNoteContentIterator* iter) {
-	iter->content = content;
+	iter->collection = content;
 	iter->initialLen = content->len;
 	iter->currentIdx = 0;
 }

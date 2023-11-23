@@ -9,7 +9,7 @@ struct _LiteraNotepadPage {
 	GtkListBox* notesList;
 
 	LiteraNotebook* selectedNotebook;
-	LiteraNotebook** notebooks;
+	LiteraNotebookCollection* notebooks;
 
 	LiteraNote* selectedNote;
 	LiteraNote** notes;
@@ -138,7 +138,7 @@ static void litera_notepad_page_selected_notebook_changed(GObject* obj, GParamSp
 
 	GValue value = G_VALUE_INIT;
 	g_value_init(&value, G_TYPE_POINTER);
-	LiteraNotebook* notebook = this->notebooks[selected];
+	LiteraNotebook* notebook = litera_notebook_collection_get(this->notebooks, selected);
 
 	g_value_set_pointer(&value, notebook);
 	g_object_set_property(G_OBJECT(this), "selected-notebook", &value);
@@ -198,21 +198,23 @@ static void litera_notepad_page_init(LiteraNotepadPage* widget) {
 	g_signal_connect(widget->notesList, "row-selected", G_CALLBACK(litera_notepad_page_on_note_selected), widget);
 }
 
-void litera_notepad_page_set_notebooks(LiteraNotepadPage* page, LiteraNotebook** notebooks) {
-	int i = 0;
+void litera_notepad_page_set_notebooks(LiteraNotepadPage* page, LiteraNotebookCollection* notebooks) {
+	LiteraNotebookCollectionIterator iter;
+	litera_notebook_collection_iterate(notebooks, &iter);
 	GtkStringList* notebookList = gtk_string_list_new(NULL);
-	while(notebooks[i] != NULL) {
-		LiteraNotebook* notebook = notebooks[i++];
-		gtk_string_list_append(notebookList, notebook->display_name);
-	}
 
-	page->notebooks = notebooks;	
+	do {
+		LiteraNotebook notebook = litera_notebook_collection_iterator_get_current(&iter);
+		gtk_string_list_append(notebookList, notebook.display_name);
+	} while(litera_notebook_collection_iterator_move_next(&iter));
+
+	page->notebooks = notebooks;
 
 	gtk_drop_down_set_model(page->notepadSelector, G_LIST_MODEL(notebookList));
 	g_signal_connect(page->notepadSelector, "notify::selected", G_CALLBACK(litera_notepad_page_selected_notebook_changed), page);	
 
-	LiteraNotebook* firstNotebook = notebooks[0];
-	if(firstNotebook != NULL) {
+	if(iter.currentIdx > 0) {
+		LiteraNotebook* firstNotebook = litera_notebook_collection_get(notebooks, 0);
 		g_object_set(page, "selected-notebook", firstNotebook, NULL);
 	}
 }

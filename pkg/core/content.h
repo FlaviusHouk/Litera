@@ -2,19 +2,14 @@
 #define _CORE_CONTENT_H_
 
 #include "types.h"
+#include "collections.h"
+
 #include <stdbool.h>
-
-void       litera_note_content_iterator_reset(LiteraNoteContentIterator* iter);
-DataPiece* litera_note_content_iterator_get_current(LiteraNoteContentIterator* iter);
-bool       litera_note_content_iterator_move_next(LiteraNoteContentIterator* iter);
-
-void           litera_notebook_collection_iterator_reset(LiteraNotebookCollectionIterator* iter);
-LiteraNotebook litera_notebook_collection_iterator_get_current(LiteraNotebookCollectionIterator* iter);
-bool           litera_notebook_collection_iterator_move_next(LiteraNotebookCollectionIterator* iter);
 
 LiteraNotebookCollection* litera_notebook_collection_new(int cap);
 void                      litera_notebook_collection_add(LiteraNotebookCollection* c, LiteraNotebook notebook);
 void                      litera_notebook_collection_iterate(LiteraNotebookCollection* c, LiteraNotebookCollectionIterator* iter); 
+LiteraNotebook*           litera_notebook_collection_get(LiteraNotebookCollection* c, int idx);
 
 void               litera_note_init_text_piece(DataPiece* piece, int len);
 

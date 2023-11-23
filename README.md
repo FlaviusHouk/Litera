@@ -9,5 +9,5 @@ While the sandbox for the Evernote (sandbox.evernote.com) does not work, I'm con
 - [ ] **Proper user authorization.** It should be possible to login to any account without developer token.
 - [x] **Read the list of notebooks and notes in it.** It is now possible to get the list of notebooks and notes and visualize text in the note. 
 - [x] **Present content of the note.** Images, list and other parts of the note will cause an application to crash. (Support for this items is planned).
-- [ ] **Edit the text within the note save changes on the server**. User should be able to edit text in the not and save changes.
+- [x] **Edit the text within the note save changes on the server**. User should be able to edit text in the note and save changes.
 - [ ] **Logout**. User should be able to logout from the application.

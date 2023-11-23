@@ -71,7 +71,7 @@ void core_state_logout(State* state) {
 	state->currentUser = NULL;
 }
 
-LiteraNotebook** core_state_get_notebooks(State* state) {
+LiteraNotebookCollection* core_state_get_notebooks(State* state) {
 	void* backendState = state->backend.state;
 	return state->backend.get_notebooks(backendState, state->currentUser);
 }
