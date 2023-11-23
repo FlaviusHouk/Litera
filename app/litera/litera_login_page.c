@@ -44,6 +44,12 @@ static void litera_login_page_init (LiteraLoginPage* page) {
 static void litera_login_page_dispose (GObject* obj) {
 	gtk_widget_dispose_template(GTK_WIDGET(obj), LITERA_LOGIN_PAGE_TYPE);
 
+	GtkWidget* child = gtk_widget_get_first_child(GTK_WIDGET(obj));
+	do {
+		gtk_widget_unparent(child);
+		child = gtk_widget_get_first_child(GTK_WIDGET(obj));
+	} while(child != NULL);
+
 	G_OBJECT_CLASS(litera_login_page_parent_class)->dispose(obj);
 }
 

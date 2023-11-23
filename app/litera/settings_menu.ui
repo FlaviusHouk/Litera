@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-<menu id="app-menu">
+<menu id="settings-menu">
 	<section>
 		<item>
-			<attribute name="label">Settings</attribute>
-		</item>
-		<item>
-			<attribute name="label">Logout</attribute>
+			<attribute name="label">Back</attribute>
+			<attribute name="action">litera.back</attribute>
 		</item>
 		<item>
 			<attribute name="label">About</attribute>
+			<attribute name="action">app.about</attribute>
 		</item>
 		<item>
 			<attribute name="label">Quit</attribute>
+			<attribute name="action">win.close</attribute>
 		</item>
 	</section>
 </menu>

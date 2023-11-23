@@ -16,13 +16,24 @@ typedef struct _evernote_backend_state {
 	NoteStoreClient* noteStore;
 } EvernoteState;
 
+EvernoteConfig config;
+
 static void evernote_init(void* state) {
 	LIBXML_TEST_VERSION
+
+	config.baseUrl = g_new(gchar, 128);
+	strcpy(config.baseUrl, "https://sandbox.evernote.com");
 
 	GError* err = NULL;
 	EvernoteState* this = (EvernoteState*)state;
 
-	EvernoteHttpTransport* transport = evernote_http_transport_new("https://sandbox.evernote.com/edam/user");
+	int len = snprintf(NULL, 0, "%s/edam/user", config.baseUrl);
+	gchar* url = g_new(gchar, len);
+	sprintf(url, "%s/edam/user", config.baseUrl);
+
+	EvernoteHttpTransport* transport = evernote_http_transport_new(url);
+	g_free(url);
+
 	ThriftProtocol* protocol =  g_object_new (THRIFT_TYPE_BINARY_PROTOCOL, "transport", transport, NULL);
 	this->userClient = g_object_new(TYPE_USER_STORE_CLIENT, "input_protocol", protocol, "output_protocol", protocol, NULL);
 
@@ -77,6 +88,7 @@ static LiteraNotebook** evernote_get_notebooks(void* state, LiteraUser* user) {
 
 	if(!note_store_if_list_notebooks (NOTE_STORE_IF(this->noteStore), &notebooks, user->access_token, &userException, &systemException, &err)) {
 		printf("%s\n", "Cannot read notebooks");
+		return NULL;
 	}
 
 	LiteraNotebook** returnValue = (LiteraNotebook**)malloc(sizeof(LiteraNotebook*) * notebooks->len + 1);
@@ -178,8 +190,6 @@ static void evernote_parse_div(LiteraNote* note, xmlNodePtr node) {
 }
 
 static void evernote_parse_xhtml_content(gchar* xhtml, gint len, LiteraNote* note) {
-	g_print("%s\n", xhtml);
-	int l2 = strlen(xhtml);
 	xmlDocPtr doc = xmlReadMemory(xhtml, len, NULL, NULL, 0);
 
 	g_assert(doc);
@@ -339,7 +349,7 @@ static void evernote_save_content(void* state, LiteraUser* user, LiteraNote* not
 	sendNote->__isset_content = FALSE;
 	g_object_unref(G_OBJECT(sendNote));
 
-    metadata->contentLength = xmlContentLen;
+	metadata->contentLength = xmlContentLen;
 }
 
 static EvernoteState state =
@@ -364,4 +374,8 @@ static Backend backend =
 
 Backend evernote_get_backend() {
 	return backend;
+}
+
+EvernoteConfig* evernote_get_config() {
+	return &config;
 }

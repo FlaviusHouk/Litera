@@ -55,14 +55,6 @@ void litera_note_init_text_piece(DataPiece* piece, int len) {
 	piece->text.len = len;
 }
 
-DataPiece*         litera_note_create_text_piece(int len) {
-	DataPiece* piece = (DataPiece*)malloc(sizeof(DataPiece));
-
-	litera_note_init_text_piece(piece, len);
-
-	return piece;
-}
-
 LiteraNoteContent* litera_note_create_content(int capacity) {
 	LiteraNoteContent* content = (LiteraNoteContent*) malloc(sizeof(LiteraNoteContent));
 
@@ -73,20 +65,20 @@ LiteraNoteContent* litera_note_create_content(int capacity) {
 	return content;
 }
 
-static DataPiece*  litera_note_add_piece_internal(LiteraNoteContent* content, const DataPiece* piece) {
+static DataPiece*  litera_note_add_piece_internal(LiteraNoteContent* content, DataPiece piece) {
 	if(content->len == content->cap) {
 		void* newBuf = realloc(content->buffer, sizeof(DataPiece) * content->cap * 2);
 		assert(newBuf);
 		content->buffer = (DataPiece*)newBuf;
 	}
 
-    int curr = content->len++;
-	//I'm not sure how bad is it.
-	content->buffer[curr] = *piece;
-    return content->buffer + curr;
+	int curr = content->len++;
+	content->buffer[curr] = piece;
+
+	return content->buffer + curr;
 }
 
-void               litera_note_add_piece(LiteraNote* note, const DataPiece* piece) {
+void               litera_note_add_piece(LiteraNote* note, DataPiece piece) {
 	assert(note);
 	LiteraNoteContent* content = note->content;
 	litera_note_add_piece_internal(content, piece);
@@ -101,21 +93,23 @@ DataPiece*         litera_note_add_text(LiteraNote* note, const char* text, int 
 		memcpy(piece.text.text, text, len);
 	}
 
-	return litera_note_add_piece_internal(note->content, &piece);
+	return litera_note_add_piece_internal(note->content, piece);
 }
 
 void               litere_note_remove_piece(LiteraNote* note, DataPiece* piece) {
-	LiteraNoteContentIterator iter;
-	litera_note_iterate(note, &iter);
-	int idx = -1;
+	assert(note);
+	LiteraNoteContent* content = note->content;
+	int i = 0, idx = -1;
+
 	do {
-		DataPiece* existing = litera_note_content_iterator_get_current(&iter);
+		DataPiece* existing = content->buffer + i;
 		
 		if(piece == existing) {
-			idx = iter.currentIdx;
 			break;
 		}
-	} while(litera_note_content_iterator_move_next(&iter));
+
+		i++;
+	} while(i < content->len);
 
 	if(idx == -1) {
 		return;
@@ -125,7 +119,6 @@ void               litere_note_remove_piece(LiteraNote* note, DataPiece* piece) 
 		free(piece->text.text);
 	}
 
-	LiteraNoteContent* content = note->content;
 	int lenToMove = content->len - idx + 1;
 	if (lenToMove != 0) {
 		memcpy(content->buffer + idx, content->buffer + idx + 1, sizeof(DataPiece) * lenToMove);

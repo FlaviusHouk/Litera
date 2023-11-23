@@ -10,44 +10,89 @@
 					</object>
 				</child>
 				<child>
-					<object class="GtkStack" id="stack">
-						<property name="halign">fill</property>
+					<object class="GtkBox">
+						<property name="orientation">vertical</property>
 						<child>
-							<object class="GtkStackPage">
-								<property name="name">general_settings</property>
-								<property name="title">General</property>
-								<property name="child">
-									<object class="GtkLabel">
-										<property name="label">General</property>
+							<object class="GtkStack" id="stack">
+								<property name="halign">fill</property>
+								<property name="hexpand">true</property>
+								<property name="vexpand">true</property>
+								<child>
+									<object class="GtkStackPage">
+										<property name="name">general_settings</property>
+										<property name="title">General</property>
+										<property name="child">
+											<object class="GtkLabel">
+												<property name="label">General</property>
+											</object>
+										</property>
 									</object>
-								</property>
+								</child>
+								<child>
+									<object class="GtkStackPage">
+										<property name="name">evernote_settings</property>
+										<property name="title">Evernote</property>
+										<property name="child">
+											<object class="GtkGrid">
+												<property name="hexpand">true</property>
+												<property name="vexpand">true</property>
+												<child>
+													<object class="GtkLabel">
+														<property name="margin-start">5</property>
+														<property name="margin-top">5</property>
+														<property name="margin-bottom">5</property>
+														<property name="margin-end">5</property>
+														<property name="label">Base url: </property>
+														<layout>
+															<property name="column">0</property>
+															<property name="row">0</property>
+														</layout>
+													</object>
+												</child>
+												<child>
+													<object class="GtkEntry" id="evenoteBaseUrl">
+														<property name="margin-start">5</property>
+														<property name="margin-top">5</property>
+														<property name="margin-bottom">5</property>
+														<property name="margin-end">5</property>
+														<property name="halign">fill</property>
+														<property name="hexpand">true</property>
+														<layout>
+															<property name="column">1</property>
+															<property name="row">0</property>
+														</layout>
+													</object>
+												</child>
+											</object>
+										</property>
+									</object>
+								</child>
+								<child>
+									<object class="GtkStackPage">
+										<property name="name">dev_settings</property>
+										<property name="title">Developer</property>
+										<property name="child">
+											<object class="GtkLabel">
+												<property name="label">Developer</property>
+											</object>
+										</property>
+									</object>
+								</child>
 							</object>
 						</child>
 						<child>
-							<object class="GtkStackPage">
-								<property name="name">dev_settings</property>
-								<property name="title">Developer</property>
-								<property name="child">
-									<object class="GtkGrid">
-										<child>
-											<object class="GtkLabel">
-												<property name="label">Developer token</property>
-												<layout>
-													<property name="column">0</property>
-													<property name="row">0</property>
-												</layout>
-											</object>
-										</child>
-										<child>
-											<object class="GtkEntry" id="devEntry">
-												<layout>
-													<property name="column">1</property>
-													<property name="row">0</property>
-												</layout>
-											</object>
-										</child>
+							<object class="GtkBox">
+								<property name="orientation">horizontal</property>
+								<property name="halign">end</property>
+								<child>
+									<object class="GtkButton" id="saveButton">
+										<property name="label">Save</property>
+										<property name="margin-start">5</property>
+										<property name="margin-top">5</property>
+										<property name="margin-bottom">5</property>
+										<property name="margin-end">5</property>
 									</object>
-								</property>
+								</child>
 							</object>
 						</child>
 					</object>

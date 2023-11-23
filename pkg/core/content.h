@@ -8,10 +8,18 @@ void       litera_note_content_iterator_reset(LiteraNoteContentIterator* iter);
 DataPiece* litera_note_content_iterator_get_current(LiteraNoteContentIterator* iter);
 bool       litera_note_content_iterator_move_next(LiteraNoteContentIterator* iter);
 
-DataPiece*         litera_note_create_text_piece(int len);
+void           litera_notebook_collection_iterator_reset(LiteraNotebookCollectionIterator* iter);
+LiteraNotebook litera_notebook_collection_iterator_get_current(LiteraNotebookCollectionIterator* iter);
+bool           litera_notebook_collection_iterator_move_next(LiteraNotebookCollectionIterator* iter);
+
+LiteraNotebookCollection* litera_notebook_collection_new(int cap);
+void                      litera_notebook_collection_add(LiteraNotebookCollection* c, LiteraNotebook notebook);
+void                      litera_notebook_collection_iterate(LiteraNotebookCollection* c, LiteraNotebookCollectionIterator* iter); 
+
+void               litera_note_init_text_piece(DataPiece* piece, int len);
 
 LiteraNoteContent* litera_note_create_content(int capacity);
-void               litera_note_add_piece(LiteraNote* note, const DataPiece* piece);
+void               litera_note_add_piece(LiteraNote* note, DataPiece piece);
 DataPiece*         litera_note_add_text(LiteraNote* note, const char* text, int len);
 void               litere_note_remove_piece(LiteraNote* note, DataPiece* piece);
 void               litera_note_clear(LiteraNote* note);

@@ -8,6 +8,7 @@
 G_DECLARE_FINAL_TYPE (LiteraAppMainWindow, litera_app_main_window, LITERA, APP_MAIN_WINDOW, GtkApplicationWindow)
 
 LiteraAppMainWindow* litera_app_main_window_new(LiteraApp* app, State* state);
+void                 litera_app_main_window_set_page(LiteraAppMainWindow* win, AppPage page);
 AppPage              litera_app_main_window_get_page(LiteraAppMainWindow* win);
 
 #endif //_LITERA_APP_MAIN_WINDOW_H_
