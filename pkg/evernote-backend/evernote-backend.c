@@ -18,7 +18,14 @@ typedef struct _evernote_backend_state {
 
 EvernoteConfig config;
 
+static Backend* get_backend_local();
+
 static void evernote_init(void* state) {
+	Backend* backend = get_backend_local(); 
+	if (backend->is_initialized) {
+		return;
+	}
+
 	LIBXML_TEST_VERSION
 
 	config.baseUrl = g_new(gchar, 128);
@@ -45,6 +52,7 @@ static void evernote_init(void* state) {
 		return;
 	}
 
+	backend->is_initialized = TRUE;
 }
 
 static LiteraUser* evernote_login_dev(void* state, const char* token) {
@@ -376,6 +384,10 @@ static Backend backend =
 
 Backend evernote_get_backend() {
 	return backend;
+}
+
+static Backend* get_backend_local() {
+	return &backend;
 }
 
 EvernoteConfig* evernote_get_config() {
