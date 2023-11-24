@@ -8,7 +8,7 @@
 G_DECLARE_FINAL_TYPE (LiteraNotepadPage, litera_notepad_page, LITERA, NOTEPAD_PAGE, GtkWidget)
 
 LiteraNotepadPage*  litera_notepad_page_new();
-void                litera_notepad_page_set_notebooks(LiteraNotepadPage* page, LiteraNotebook** notebooks);
+void                litera_notepad_page_set_notebooks(LiteraNotepadPage* page, LiteraNotebookCollection* notebooks);
 LiteraNotebook*     litera_notepad_page_get_selected_notebook(LiteraNotepadPage* page);
 void                litera_notepad_page_set_notes(LiteraNotepadPage* page, LiteraNote** notebooks);
 LiteraNote*         litera_notepad_page_get_selected_note(LiteraNotepadPage* page);

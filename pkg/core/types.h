@@ -7,12 +7,12 @@ typedef struct {
 } LiteraUser;
 
 typedef struct {
-    char* display_name;
+	char* display_name;
 	void* state;
 } LiteraNotebook;
 
 typedef struct {
-    int type;
+	int type;
 	char* text;
 	int len;
 	/*Text props*/
@@ -29,24 +29,12 @@ typedef struct {
 
 typedef union {
 	int type;
-    TextPiece text;
+	TextPiece text;
 	ImagePiece image;
 } DataPiece;
 
 typedef struct litera_note_content_t LiteraNoteContent; 
 typedef struct litera_notebook_collection_t LiteraNotebookCollection;
-
-typedef struct {
-	LiteraNoteContent* content;
-	int initialLen;
-	int currentIdx;
-} LiteraNoteContentIterator;
-
-typedef struct {
-	LiteraNotebookCollection* collection;
-	int initialLen;
-	int currentIdx;
-} LiteraNotebookCollectionIterator;
 
 typedef struct {
 	char* title;

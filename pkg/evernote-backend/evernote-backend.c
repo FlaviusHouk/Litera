@@ -79,7 +79,7 @@ static LiteraUser* evernote_login_dev(void* state, const char* token) {
 	return literaUser;
 }
 
-static LiteraNotebook** evernote_get_notebooks(void* state, LiteraUser* user) {
+static LiteraNotebookCollection* evernote_get_notebooks(void* state, LiteraUser* user) {
 	EvernoteState* this = (EvernoteState*)state;
 	GError* err = NULL;
 	EDAMUserException* userException = NULL;
@@ -91,14 +91,16 @@ static LiteraNotebook** evernote_get_notebooks(void* state, LiteraUser* user) {
 		return NULL;
 	}
 
-	LiteraNotebook** returnValue = (LiteraNotebook**)malloc(sizeof(LiteraNotebook*) * notebooks->len + 1);
-	returnValue[notebooks->len] = NULL;
+	LiteraNotebookCollection* returnValue = litera_notebook_collection_new (notebooks->len);
 	for(int i = 0; i < notebooks->len; i++) {
-		returnValue[i] = (LiteraNotebook*)malloc(sizeof(LiteraNotebook));
+		LiteraNotebook notebook;
 		Notebook* evNotebook = (Notebook*)notebooks->pdata[i];
 
-		returnValue[i]->display_name = strdup(evNotebook->name);
-		returnValue[i]->state = g_object_ref(G_OBJECT(evNotebook));
+		//Still quite a bad thing
+		notebook.display_name = strdup(evNotebook->name);
+		notebook.state = g_object_ref(G_OBJECT(evNotebook));
+
+		litera_notebook_collection_add(returnValue, notebook);
 	}
 
 	g_ptr_array_unref(notebooks);

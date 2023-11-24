@@ -82,7 +82,7 @@ static void litera_app_main_window_on_dev_login(GObject* page, gchar* token, Lit
 	core_state_login_dev(win->state, token);
 	g_signal_handler_disconnect(page, win->loginDevHandlerId);
 
-	LiteraNotebook** notebooks = core_state_get_notebooks(win->state);
+	LiteraNotebookCollection* notebooks = core_state_get_notebooks(win->state);
 	g_signal_connect(G_OBJECT(win->notepadPage), "notify::selected-notebook", G_CALLBACK(litera_app_main_window_on_select_notebook), win);
 	g_signal_connect(G_OBJECT(win->notepadPage), "notify::selected-note", G_CALLBACK(litera_app_main_window_on_note_change), win);
 	g_signal_connect(G_OBJECT(win->notepadPage), "refresh-note", G_CALLBACK(litera_app_main_window_refresh_note), win);

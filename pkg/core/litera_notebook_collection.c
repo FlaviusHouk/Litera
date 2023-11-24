@@ -62,3 +62,10 @@ void litera_notebook_collection_iterate(LiteraNotebookCollection* c, LiteraNoteb
 	iter->currentIdx = 0;
 	iter->initialLen = c->len;
 }
+
+LiteraNotebook*  litera_notebook_collection_get(LiteraNotebookCollection* c, int idx) {
+	assert(idx > 0);
+	assert(idx < c->len);
+
+	return c->buffer + idx;
+}
