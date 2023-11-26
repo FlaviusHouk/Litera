@@ -8,8 +8,8 @@ typedef struct backend_t {
 	const char* name;
 	bool is_initialized;
 	void (*init)(void* state);
-	LiteraUser* (*login)(void* state, char* userName, char* password);
-	LiteraUser* (*login_dev)(void* state, const char* token);
+	bool (*login)(void* state, char* userName, char* password, LiteraUser* user);
+	bool (*login_dev)(void* state, const char* token, LiteraUser* user);
 	void (*logout)(void* state, LiteraUser* currentUser);
 	LiteraNotebookCollection* (*get_notebooks)(void* state, LiteraUser* currentUser);
 	LiteraNote** (*get_notes)(void* state, LiteraUser* currentUser, LiteraNotebook* notebook);

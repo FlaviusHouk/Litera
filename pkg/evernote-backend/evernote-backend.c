@@ -55,7 +55,11 @@ static void evernote_init(void* state) {
 	backend->is_initialized = TRUE;
 }
 
-static LiteraUser* evernote_login_dev(void* state, const char* token) {
+static bool evernote_login_dev(void* state, const char* token, LiteraUser* literaUser) {
+	g_assert(state);
+	g_assert(token);
+	g_assert(literaUser);
+
 	GError* err = NULL;
 	EvernoteState* this = (EvernoteState*)state;
 
@@ -64,7 +68,7 @@ static LiteraUser* evernote_login_dev(void* state, const char* token) {
 	EDAMSystemException* systemException = NULL; 
 	if(!user_store_client_get_user_urls(USER_STORE_IF(this->userClient), &urls, token, &userException, &systemException, &err)) {
 		printf("%s\n", "Could not get user urls");
-		return NULL;
+		return false;
 	}
 
 	gchar* noteStoreUrl = urls->noteStoreUrl;
@@ -72,19 +76,20 @@ static LiteraUser* evernote_login_dev(void* state, const char* token) {
 	ThriftProtocol* storeProtocol =  g_object_new (THRIFT_TYPE_BINARY_PROTOCOL, "transport", storeTransport, NULL);
 	this->noteStore = g_object_new(TYPE_NOTE_STORE_CLIENT, "input_protocol", storeProtocol, "output_protocol", storeProtocol, NULL);
 
-	LiteraUser* literaUser = g_new(LiteraUser, 1);
 	literaUser->access_token = g_strdup(token);
 
 	User* user = g_object_new(TYPE_USER, NULL);
 	if(!user_store_if_get_user (USER_STORE_IF(this->userClient), &user, token, &userException, &systemException, &err)) {
 		printf("%s\n", "cannot get user info");
-		return NULL;
+		return false;
 	}
 
+	//Concrete alloc
 	literaUser->display_name = g_strdup(user->name);
 	g_object_unref(user);
+	g_object_unref(urls);
 
-	return literaUser;
+	return true;
 }
 
 static LiteraNotebookCollection* evernote_get_notebooks(void* state, LiteraUser* user) {

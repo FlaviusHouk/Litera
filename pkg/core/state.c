@@ -49,19 +49,15 @@ void core_state_init_backend(State* state) {
 	state->backend.init(state->backend.state);
 }
 
-LiteraUser* core_state_login(State* state, char* userName, char* password) {
+bool core_state_login(State* state, char* userName, char* password) {
 	//TODO: handle login state
 	void* backendState = state->backend.state;
-	state->currentUser = state->backend.login(backendState, userName, password);
-
-	return state->currentUser;
+	return state->backend.login(backendState, userName, password, state->currentUser);
 }
 
-LiteraUser* core_state_login_dev(State* state, char* token) {
+bool core_state_login_dev(State* state, const char* token) {
 	void* backendState = state->backend.state;
-	state->currentUser = state->backend.login_dev(backendState, token);
-
-	return state->currentUser;
+	return state->backend.login_dev(backendState, token, state->currentUser);
 }
 
 void core_state_logout(State* state) {

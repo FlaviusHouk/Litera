@@ -18,8 +18,8 @@ LiteraUser*                core_state_get_current_user(State* state);
 void                       core_state_free(State* state);
 
 void                       core_state_init_backend(State* state);
-LiteraUser*                core_state_login(State* state, char* userName, char* password);
-LiteraUser*                core_state_login_dev(State* state, char* token);
+bool                       core_state_login(State* state, char* userName, char* password);
+bool                       core_state_login_dev(State* state, const char* token);
 void                       core_state_logout(State* state);
 LiteraNotebookCollection*  core_state_get_notebooks(State* state);
 LiteraNote**               core_state_get_notes(State* state, LiteraNotebook* notebook);

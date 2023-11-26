@@ -17,8 +17,10 @@ static void fs_init(void* state) {
 	backend->is_initialized = true;
 }
 
-static LiteraUser* fs_login_dev(void* state, const char* token) {
-	return NULL;
+static bool fs_login_dev(void* state, const char* token, LiteraUser* user) {
+	//TODO: get user info
+
+	return true;
 }
 
 static LiteraNotebookCollection* fs_get_notebooks (void* state, LiteraUser* currentUser) {
@@ -59,7 +61,6 @@ static Backend* get_backend_local() {
 	return &fs_backend;
 }
 
-FsConfig*   fs_get_config()
-{
+FsConfig*   fs_get_config() {
 	return &config;
 }
